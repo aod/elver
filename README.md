@@ -54,3 +54,13 @@ $ go get github.com/aod/elver
 
 Set your Advent of Code session token in the environment variable `AOC_SESSION`.
 This variable is used to automatically download your inputs and cache them.
+
+# Similar
+
+These type of utility tools for Advent of Code als exist for other programming languages like
+[cargo-aoc](https://github.com/gobanos/cargo-aoc)
+(Rust)
+and
+[aocd](https://github.com/wimglenn/advent-of-code-data)
+(Python).
+Elver finds inspiration in these awesome projects so be sure to check them out as well.

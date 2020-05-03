@@ -138,7 +138,7 @@ func getInput(year int, day int) (string, error) {
 			return "", err
 		}
 
-		body, err := downloadInput(req)
+		body, err := fetch(req)
 		if err != nil {
 			return "", err
 		}
@@ -187,7 +187,7 @@ func createInputRequest(year, day int, sessionID string) (*http.Request, error) 
 	return req, nil
 }
 
-func downloadInput(req *http.Request) ([]byte, error) {
+func fetch(req *http.Request) ([]byte, error) {
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {

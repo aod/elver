@@ -16,6 +16,8 @@ import (
 	"time"
 )
 
+var sessionID string
+
 func main() {
 	cwd, err := os.Getwd()
 	if err != nil {
@@ -116,8 +118,6 @@ func runLatest(cwd string) error {
 	return errors.New("no solvers found")
 }
 
-var sessionID string
-
 func getInput(year int, day int) (string, error) {
 	if err := validYear(year); err != nil {
 		return "", err
@@ -126,44 +126,19 @@ func getInput(year int, day int) (string, error) {
 		return "", err
 	}
 
-	cacheDir, err := os.UserCacheDir()
+	inputCacheDir, err := createCacheDir(year)
 	if err != nil {
 		return "", err
 	}
-
-	cacheDir = filepath.Join(cacheDir, "aoc-inputs")
-	inputFileDir := filepath.Join(cacheDir, strconv.Itoa(year))
-	inputFile := filepath.Join(inputFileDir, strconv.Itoa(day)+".txt")
-
-	if err := os.MkdirAll(inputFileDir, 0744); err != nil {
-		return "", err
-	}
+	inputFile := filepath.Join(inputCacheDir, strconv.Itoa(day)+".txt")
 
 	if _, err := os.Stat(inputFile); err != nil && os.IsNotExist(err) {
-		url := fmt.Sprintf("https://adventofcode.com/%d/day/%d/input", year, day)
-		req, err := http.NewRequest("GET", url, nil)
+		req, err := createInputRequest(year, day, sessionID)
 		if err != nil {
 			return "", err
 		}
-		req.AddCookie(&http.Cookie{
-			Name:   "session",
-			Value:  sessionID,
-			Domain: ".adventofcode.com",
-			Path:   "/",
-		})
 
-		client := &http.Client{}
-		resp, err := client.Do(req)
-		if err != nil {
-			return "", err
-		}
-		defer resp.Body.Close()
-
-		if resp.StatusCode != http.StatusOK {
-			return "", errors.New(resp.Status)
-		}
-
-		body, err := ioutil.ReadAll(resp.Body)
+		body, err := downloadInput(req)
 		if err != nil {
 			return "", err
 		}
@@ -177,6 +152,59 @@ func getInput(year int, day int) (string, error) {
 
 	b, _ := ioutil.ReadFile(inputFile)
 	return string(b), nil
+}
+
+func createCacheDir(year int) (string, error) {
+	cacheDir, err := os.UserCacheDir()
+	if err != nil {
+		return "", err
+	}
+
+	cacheDir = filepath.Join(cacheDir, "aoc-inputs")
+	inputFileDir := filepath.Join(cacheDir, strconv.Itoa(year))
+
+	if err := os.MkdirAll(inputFileDir, 0744); err != nil {
+		return "", err
+	}
+	return inputFileDir, nil
+}
+
+func createInputRequest(year, day int, sessionID string) (*http.Request, error) {
+	url := fmt.Sprintf("https://adventofcode.com/%d/day/%d/input", year, day)
+
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	req.AddCookie(&http.Cookie{
+		Name:   "session",
+		Value:  sessionID,
+		Domain: ".adventofcode.com",
+		Path:   "/",
+	})
+
+	return req, nil
+}
+
+func downloadInput(req *http.Request) ([]byte, error) {
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, errors.New(resp.Status)
+	}
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	return body, nil
 }
 
 func validYear(year int) error {
@@ -219,5 +247,6 @@ func validDay(day int) error {
 	if day < 1 || day > 25 {
 		return fmt.Errorf("invalid day: %d", day)
 	}
+
 	return nil
 }

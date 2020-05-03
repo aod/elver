@@ -39,6 +39,59 @@ func main() {
 }
 
 func runLatest(cwd string) error {
+	year, yPath, err := findLatestYearDir(cwd)
+	if err != nil {
+		return err
+	}
+
+	err = buildPlugin(yPath)
+	if err != nil {
+		return err
+	}
+
+	p, err := plugin.Open(path.Join(yPath, fmt.Sprintf("%d.so", year)))
+	if err != nil {
+		return err
+	}
+
+	day, solvers, err := findLatestSolvers(p)
+	if err != nil {
+		return err
+	}
+
+	input, err := getInput(year, day)
+	if err != nil {
+		return err
+	}
+
+	fmt.Println("AOC", year)
+	for i, part := range [...]string{"A", "B"} {
+		if solvers[i] != nil {
+			printSolver(day, part, func() (interface{}, error) {
+				return solvers[i](input)
+			})
+		}
+	}
+
+	return nil
+}
+
+type solverWrapper = func() (interface{}, error)
+
+func printSolver(day int, part string, solve solverWrapper) {
+	start := time.Now()
+	ans, err := solve()
+	elapsed := time.Since(start)
+
+	fmt.Printf("Day %d %s (%s):\n", day, part, elapsed)
+	if err != nil {
+		fmt.Println("[ERROR]", err)
+	} else {
+		fmt.Println(ans)
+	}
+}
+
+func findLatestYearDir(cwd string) (int, string, error) {
 	years := aocYears()
 	var year int
 	var yPath string
@@ -59,63 +112,57 @@ func runLatest(cwd string) error {
 	}
 
 	if len(yPath) == 0 {
-		return errors.New("no advent year directory found")
+		return 0, "", errors.New("no advent year directory found")
 	}
 
+	return year, yPath, nil
+}
+
+type solver = func(string) (interface{}, error)
+
+func findLatestSolvers(p *plugin.Plugin) (int, [2]solver, error) {
+	var solvers [2]solver
+
+	for day := 25; day > 0; day-- {
+		foundPart := false
+
+	inner:
+		for i, part := range [...]string{"A", "B"} {
+			v, err := p.Lookup("Day" + strconv.Itoa(day) + part)
+			if err != nil {
+				break inner
+			}
+			foundPart = true
+
+			solver, ok := v.(func(string) (interface{}, error))
+			if !ok {
+				return 0, solvers, fmt.Errorf("found invalid solver signature for day %d: %T, expected: %T", day, v, solver)
+			}
+
+			solvers[i] = solver
+		}
+
+		if foundPart {
+			return day, solvers, nil
+		}
+	}
+
+	return 0, solvers, errors.New("no solvers found")
+}
+
+func buildPlugin(dir string) error {
 	cmd := exec.Command("go", "build", "-buildmode=plugin")
-	cmd.Dir = yPath
+	cmd.Dir = dir
 	var outb bytes.Buffer
 	cmd.Stderr = &outb
 
 	err := cmd.Run()
 	if err != nil {
 		errMsg := strings.Trim(outb.String(), "\n")
-		return fmt.Errorf("%v: %s %s", err, yPath, errMsg)
+		return fmt.Errorf("%v: %s %s", err, dir, errMsg)
 	}
 
-	p, err := plugin.Open(path.Join(yPath, fmt.Sprintf("%d.so", year)))
-	if err != nil {
-		return err
-	}
-
-	fmt.Println("AOC", year)
-
-	for d := 25; d > 0; d-- {
-		foundPart := false
-
-	inner:
-		for _, part := range [...]string{"A", "B"} {
-			v, err := p.Lookup("Day" + strconv.Itoa(d) + part)
-			if err != nil {
-				break inner
-			} else {
-				foundPart = true
-			}
-
-			input, err := getInput(year, d)
-			if err != nil {
-				return err
-			}
-
-			solver := v.(func(string) (interface{}, error))
-			start := time.Now()
-			ans, err := solver(input)
-			elapsed := time.Since(start)
-
-			fmt.Printf("Day %d %s (%s):\n", d, part, elapsed)
-			if err != nil {
-				fmt.Println("[ERROR]", err)
-			} else {
-				fmt.Println(ans)
-			}
-		}
-
-		if foundPart {
-			return nil
-		}
-	}
-
-	return errors.New("no solvers found")
+	return nil
 }
 
 func getInput(year int, day int) (string, error) {

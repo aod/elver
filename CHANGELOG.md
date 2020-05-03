@@ -6,6 +6,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+
+## [0.1.1] - 2020-05-03
+### Fixed
+- Refactored procedure that runs the latest solution for better maintainability
+- Refactored procedure which fetches and caches the input for better maintainability
+
 ## [0.1.0] - 2020-05-01
 ### Added
 - Automatically run the latest solution

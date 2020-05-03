@@ -16,8 +16,6 @@ import (
 	"time"
 )
 
-var sessionID string
-
 func main() {
 	cwd, err := os.Getwd()
 	if err != nil {
@@ -25,20 +23,20 @@ func main() {
 		os.Exit(1)
 	}
 
-	sessionID = os.Getenv("AOC_SESSION")
+	sessionID := os.Getenv("AOC_SESSION")
 	if len(sessionID) == 0 {
 		fmt.Fprintln(os.Stderr, "no environment variable `AOC_SESSION` found")
 		os.Exit(1)
 	}
 
-	err = runLatest(cwd)
+	err = runLatest(cwd, sessionID)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
 }
 
-func runLatest(cwd string) error {
+func runLatest(cwd, sessionID string) error {
 	year, yPath, err := findLatestYearDir(cwd)
 	if err != nil {
 		return err
@@ -59,7 +57,7 @@ func runLatest(cwd string) error {
 		return err
 	}
 
-	input, err := getInput(year, day)
+	input, err := getInput(year, day, sessionID)
 	if err != nil {
 		return err
 	}
@@ -165,7 +163,7 @@ func buildPlugin(dir string) error {
 	return nil
 }
 
-func getInput(year int, day int) (string, error) {
+func getInput(year int, day int, sessionID string) (string, error) {
 	if err := validYear(year); err != nil {
 		return "", err
 	}

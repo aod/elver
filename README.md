@@ -7,6 +7,7 @@ Write your solution and Elver will take care of the rest.
 
 - Automatically downloads and caches the input
 - Runs your latest solution and times it
+- Automatic benchmarking of your solution
 - 0 third party dependencies
 
 # How does it work?
@@ -54,6 +55,19 @@ $ go get github.com/aod/elver
 
 Set your Advent of Code session token in the environment variable `AOC_SESSION`.
 This variable is used to automatically download your inputs and cache them.
+
+# Benchmarking
+
+Run Elver with the `-b` flag to benchmark your latest solution:
+
+```console
+$ elver -b
+AOC 2015
+Day 1 A (N=231919370, 5 ns/op, 0 bytes/op, 0 allocs/op):
+42
+Day 1 B (N=0, 0 ns/op, 0 bytes/op, 0 allocs/op):
+[ERROR] Not implemented
+```
 
 # Similar
 

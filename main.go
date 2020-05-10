@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"errors"
+	"flag"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -13,10 +14,14 @@ import (
 	"plugin"
 	"strconv"
 	"strings"
+	"testing"
 	"time"
 )
 
 func main() {
+	benchmarkFlag := flag.Bool("b", false, "benchmarks your latest solution")
+	flag.Parse()
+
 	cwd, err := os.Getwd()
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
@@ -29,14 +34,14 @@ func main() {
 		os.Exit(1)
 	}
 
-	err = runLatest(cwd, sessionID)
+	err = runLatest(cwd, sessionID, *benchmarkFlag)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
 }
 
-func runLatest(cwd, sessionID string) error {
+func runLatest(cwd, sessionID string, benchmark bool) error {
 	year, yPath, err := findLatestYearDir(cwd)
 	if err != nil {
 		return err
@@ -67,7 +72,7 @@ func runLatest(cwd, sessionID string) error {
 		if solvers[i] != nil {
 			printSolver(day, part, func() (interface{}, error) {
 				return solvers[i](input)
-			})
+			}, benchmark)
 		}
 	}
 
@@ -76,12 +81,31 @@ func runLatest(cwd, sessionID string) error {
 
 type solverWrapper = func() (interface{}, error)
 
-func printSolver(day int, part string, solve solverWrapper) {
-	start := time.Now()
-	ans, err := solve()
-	elapsed := time.Since(start)
+func printSolver(day int, part string, solve solverWrapper, benchmark bool) {
+	fmt.Printf("Day %v %v ", day, part)
 
-	fmt.Printf("Day %d %s (%s):\n", day, part, elapsed)
+	var ans interface{}
+	var err error
+
+	if benchmark {
+		b := testing.Benchmark(func(b *testing.B) {
+			for i := 0; i < b.N; i++ {
+				if ans, err = solve(); err != nil {
+					b.FailNow()
+				}
+			}
+		})
+
+		fmt.Printf("(N=%d, %v ns/op, %v bytes/op, %v allocs/op):\n",
+			b.N, b.NsPerOp(), b.AllocedBytesPerOp(), b.AllocsPerOp())
+	} else {
+		start := time.Now()
+		ans, err = solve()
+		elapsed := time.Since(start)
+
+		fmt.Printf("(%s):\n", elapsed)
+	}
+
 	if err != nil {
 		fmt.Println("[ERROR]", err)
 	} else {

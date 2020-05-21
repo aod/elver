@@ -1,4 +1,4 @@
-# Elver
+![](./elver.png)
 
 Run your Go Advent of Code solutions with a single command. 
 Write your solution and Elver will take care of the rest.

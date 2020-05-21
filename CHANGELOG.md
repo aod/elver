@@ -6,9 +6,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.2] - 2020-05-21
+### Added
+- New logo and badges in README.md
+
 ## [0.2.1] - 2020-05-10
 ### Added
-- Benchmarking of the latest soltuion behind the `-b` flag
+- Benchmarking of the latest solution behind the `-b` flag
 
 ## [0.1.1] - 2020-05-03
 ### Fixed

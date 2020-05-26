@@ -23,22 +23,12 @@ func main() {
 	flag.Parse()
 
 	cwd, err := os.Getwd()
-	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		os.Exit(1)
-	}
+	handleError(err)
 
-	sessionID := os.Getenv("AOC_SESSION")
-	if len(sessionID) == 0 {
-		fmt.Fprintln(os.Stderr, "no environment variable `AOC_SESSION` found")
-		os.Exit(1)
-	}
+	sessionID, err := env("AOC_SESSION")
+	handleError(err)
 
-	err = runLatest(cwd, sessionID, *benchmarkFlag)
-	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		os.Exit(1)
-	}
+	handleError(runLatest(cwd, sessionID, *benchmarkFlag))
 }
 
 func runLatest(cwd, sessionID string, benchmark bool) error {
@@ -66,13 +56,16 @@ func runLatest(cwd, sessionID string, benchmark bool) error {
 	if err != nil {
 		return err
 	}
+	stringInput := string(input)
 
 	fmt.Println("AOC", year)
 	for i, part := range [...]string{"A", "B"} {
 		if solvers[i] != nil {
-			printSolver(day, part, func() (interface{}, error) {
-				return solvers[i](input)
-			}, benchmark)
+			solver := solvers[i]
+			solve := func() (interface{}, error) {
+				return solver(stringInput)
+			}
+			printSolver(day, part, solve, benchmark)
 		}
 	}
 
@@ -115,29 +108,15 @@ func printSolver(day int, part string, solve solverWrapper, benchmark bool) {
 
 func findLatestYearDir(cwd string) (int, string, error) {
 	years := aocYears()
-	var year int
-	var yPath string
-
 	for i := len(years) - 1; i >= 0; i-- {
-		p := path.Join(cwd, strconv.Itoa(years[i]))
-		stat, err := os.Stat(p)
+		path := filepath.Join(cwd, strconv.Itoa(years[i]))
 
-		if err != nil && os.IsNotExist(err) {
-			continue
-		} else if !stat.IsDir() {
-			continue
+		if stat, err := os.Stat(path); err == nil && stat.IsDir() {
+			return years[i], path, nil
 		}
-
-		year = years[i]
-		yPath = p
-		break
 	}
 
-	if len(yPath) == 0 {
-		return 0, "", errors.New("no advent year directory found")
-	}
-
-	return year, yPath, nil
+	return 0, "", errors.New("no advent year directory found")
 }
 
 type solver = func(string) (interface{}, error)
@@ -145,9 +124,8 @@ type solver = func(string) (interface{}, error)
 func findLatestSolvers(p *plugin.Plugin) (int, [2]solver, error) {
 	var solvers [2]solver
 
+	foundPart := false
 	for day := 25; day > 0; day-- {
-		foundPart := false
-
 	inner:
 		for i, part := range [...]string{"A", "B"} {
 			v, err := p.Lookup("Day" + strconv.Itoa(day) + part)
@@ -178,49 +156,47 @@ func buildPlugin(dir string) error {
 	var outb bytes.Buffer
 	cmd.Stderr = &outb
 
-	err := cmd.Run()
-	if err != nil {
+	if err := cmd.Run(); err != nil {
 		errMsg := strings.Trim(outb.String(), "\n")
-		return fmt.Errorf("%v: %s %s", err, dir, errMsg)
+		return fmt.Errorf("failed to run `%s` in %s, %s: %w", cmd, dir, errMsg, err)
 	}
 
 	return nil
 }
 
-func getInput(year int, day int, sessionID string) (string, error) {
+func getInput(year, day int, sessionID string) ([]byte, error) {
 	if err := validYear(year); err != nil {
-		return "", err
+		return nil, err
 	}
 	if err := validDay(day); err != nil {
-		return "", err
+		return nil, err
 	}
 
 	inputCacheDir, err := createCacheDir(year)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	inputFile := filepath.Join(inputCacheDir, strconv.Itoa(day)+".txt")
 
 	if _, err := os.Stat(inputFile); err != nil && os.IsNotExist(err) {
 		req, err := createInputRequest(year, day, sessionID)
 		if err != nil {
-			return "", err
+			return nil, err
 		}
 
 		body, err := fetch(req)
 		if err != nil {
-			return "", err
+			return nil, err
 		}
 
 		if err := ioutil.WriteFile(inputFile, body, 0644); err != nil {
-			return "", err
+			return nil, err
 		}
 
-		return string(body), nil
+		return body, nil
 	}
 
-	b, _ := ioutil.ReadFile(inputFile)
-	return string(b), nil
+	return ioutil.ReadFile(inputFile)
 }
 
 func createCacheDir(year int) (string, error) {
@@ -300,13 +276,13 @@ func validYear(year int) error {
 
 func aocYears() []int {
 	curr := time.Now().Year()
-	var years []int
-	for y := 2015; y <= curr; y++ {
+	years := make([]int, 0, curr-2015)
+	for y := 2015; y < curr; y++ {
 		years = append(years, y)
 	}
 
-	if validYear(years[len(years)-1]) != nil {
-		years = years[:len(years)-1]
+	if validYear(curr) != nil {
+		years = append(years, curr)
 	}
 
 	return years
@@ -318,4 +294,19 @@ func validDay(day int) error {
 	}
 
 	return nil
+}
+
+func handleError(err error) {
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+}
+
+func env(name string) (value string, err error) {
+	value, ok := os.LookupEnv(name)
+	if !ok {
+		err = fmt.Errorf("no environment variable `%s` found", name)
+	}
+	return
 }

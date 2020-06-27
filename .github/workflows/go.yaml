@@ -20,3 +20,10 @@ jobs:
       - uses: actions/setup-go@v2
       - run: go get -u golang.org/x/tools/cmd/goimports
       - run: diff --line-format=%L <(goimports -d .) <(echo -n)
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-go@v2
+      - run: go test ./... -v -cover

@@ -16,10 +16,19 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/aod/elver/flags"
 )
 
 func main() {
-	benchmarkFlag := flag.Bool("b", false, "benchmarks your latest solution")
+	benchmarkFlag := flag.Bool("b", false, "enable benchmarking")
+
+	year := &flags.IntRange{Value: 0, Min: 2015, Max: 2019}
+	flag.Var(year, "y", "the `year` to run")
+
+	day := &flags.IntRange{Value: 0, Min: 1, Max: 25}
+	flag.Var(day, "d", "the `day` to run")
+
 	flag.Parse()
 
 	cwd, err := os.Getwd()
@@ -28,11 +37,116 @@ func main() {
 	sessionID, err := env("AOC_SESSION")
 	handleError(err)
 
-	handleError(runLatest(cwd, sessionID, *benchmarkFlag))
+	var dirFinder yearDirFinder = latestYearDirFinder{}
+	if year.Value != 0 {
+		dirFinder = specificYearDirFinder{year: year.Value}
+	}
+
+	var solversFinder solversFinder = latestSolversFinder{}
+	if day.Value != 0 {
+		solversFinder = specificDaySolversFinder{day: day.Value}
+	}
+
+	handleError(runLatest(cwd, sessionID, *benchmarkFlag, dirFinder, solversFinder))
 }
 
-func runLatest(cwd, sessionID string, benchmark bool) error {
-	year, yPath, err := findLatestYearDir(cwd)
+type yearDirFinder interface {
+	findYearDir(string) (int, string, error)
+}
+
+type latestYearDirFinder struct{}
+
+func (latestYearDirFinder) findYearDir(cwd string) (int, string, error) {
+	years := aocYears()
+	for i := len(years) - 1; i >= 0; i-- {
+		path := filepath.Join(cwd, strconv.Itoa(years[i]))
+
+		if stat, err := os.Stat(path); err == nil && stat.IsDir() {
+			return years[i], path, nil
+		}
+	}
+
+	return 0, "", fmt.Errorf("no advent year directory found in %s", cwd)
+}
+
+type specificYearDirFinder struct {
+	year int
+}
+
+func (f specificYearDirFinder) findYearDir(cwd string) (int, string, error) {
+	path := filepath.Join(cwd, strconv.Itoa(f.year))
+	if stat, err := os.Stat(path); err == nil && stat.IsDir() {
+		return f.year, path, nil
+	}
+	return 0, "", fmt.Errorf("advent year %d directory found in %s", f.year, cwd)
+}
+
+type solver = func(string) (interface{}, error)
+
+type solversFinder interface {
+	findSolvers(p *plugin.Plugin) (int, [2]solver, error)
+}
+
+type latestSolversFinder struct{}
+
+func (latestSolversFinder) findSolvers(p *plugin.Plugin) (int, [2]solver, error) {
+	var solvers [2]solver
+
+	foundPart := false
+	for day := 25; day > 0; day-- {
+	inner:
+		for i, part := range [...]string{"A", "B"} {
+			v, err := p.Lookup("Day" + strconv.Itoa(day) + part)
+			if err != nil {
+				break inner
+			}
+			foundPart = true
+
+			solver, ok := v.(func(string) (interface{}, error))
+			if !ok {
+				return 0, solvers, fmt.Errorf("found invalid solver signature for day %d: %T, expected: %T", day, v, solver)
+			}
+
+			solvers[i] = solver
+		}
+
+		if foundPart {
+			return day, solvers, nil
+		}
+	}
+
+	return 0, solvers, errors.New("no solvers found")
+}
+
+type specificDaySolversFinder struct {
+	day int
+}
+
+func (f specificDaySolversFinder) findSolvers(p *plugin.Plugin) (int, [2]solver, error) {
+	var solvers [2]solver
+
+	for i, part := range [...]string{"A", "B"} {
+		v, err := p.Lookup("Day" + strconv.Itoa(f.day) + part)
+		if err != nil {
+			if i != 0 {
+				return f.day, solvers, nil
+			}
+			return 0, solvers, fmt.Errorf("no solvers found for day %d", f.day)
+		}
+
+		solver, ok := v.(func(string) (interface{}, error))
+		if !ok {
+			return 0, solvers, fmt.Errorf("found invalid solver signature for day %d: got %T, expected %T", f.day, v, solver)
+		}
+
+		solvers[i] = solver
+	}
+
+	return f.day, solvers, nil
+}
+
+func runLatest(cwd, sessionID string, benchmark bool, dirFinder yearDirFinder, solversFinder solversFinder) error {
+	year, yPath, err := dirFinder.findYearDir(cwd)
 	if err != nil {
 		return err
 	}
@@ -47,7 +161,7 @@ func runLatest(cwd, sessionID string, benchmark bool) error {
 		return err
 	}
 
-	day, solvers, err := findLatestSolvers(p)
+	day, solvers, err := solversFinder.findSolvers(p)
 	if err != nil {
 		return err
 	}
@@ -104,50 +218,6 @@ func printSolver(day int, part string, solve solverWrapper, benchmark bool) {
 	} else {
 		fmt.Println(ans)
 	}
-}
-
-func findLatestYearDir(cwd string) (int, string, error) {
-	years := aocYears()
-	for i := len(years) - 1; i >= 0; i-- {
-		path := filepath.Join(cwd, strconv.Itoa(years[i]))
-
-		if stat, err := os.Stat(path); err == nil && stat.IsDir() {
-			return years[i], path, nil
-		}
-	}
-
-	return 0, "", errors.New("no advent year directory found")
-}
-
-type solver = func(string) (interface{}, error)
-
-func findLatestSolvers(p *plugin.Plugin) (int, [2]solver, error) {
-	var solvers [2]solver
-
-	foundPart := false
-	for day := 25; day > 0; day-- {
-	inner:
-		for i, part := range [...]string{"A", "B"} {
-			v, err := p.Lookup("Day" + strconv.Itoa(day) + part)
-			if err != nil {
-				break inner
-			}
-			foundPart = true
-
-			solver, ok := v.(func(string) (interface{}, error))
-			if !ok {
-				return 0, solvers, fmt.Errorf("found invalid solver signature for day %d: %T, expected: %T", day, v, solver)
-			}
-
-			solvers[i] = solver
-		}
-
-		if foundPart {
-			return day, solvers, nil
-		}
-	}
-
-	return 0, solvers, errors.New("no solvers found")
 }
 
 func buildPlugin(dir string) error {

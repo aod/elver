@@ -1,4 +1,4 @@
-![](./elver.png)
+![](./assets/elver.png)
 
 ![GitHub](https://img.shields.io/github/license/aod/elver)
 ![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/aod/elver)

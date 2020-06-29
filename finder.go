@@ -7,6 +7,8 @@ import (
 	"path/filepath"
 	"plugin"
 	"strconv"
+
+	"github.com/aod/elver/aoc"
 )
 
 type yearDirFinder interface {
@@ -16,7 +18,7 @@ type yearDirFinder interface {
 type latestYearDirFinder struct{}
 
 func (latestYearDirFinder) findYearDir(cwd string) (int, string, error) {
-	years := aocYears()
+	years := aoc.Years()
 	for i := len(years) - 1; i >= 0; i-- {
 		path := filepath.Join(cwd, strconv.Itoa(years[i]))
 

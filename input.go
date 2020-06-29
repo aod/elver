@@ -10,13 +10,6 @@ import (
 )
 
 func getInput(year, day int, sessionID string) ([]byte, error) {
-	if err := validYear(year); err != nil {
-		return nil, err
-	}
-	if err := validDay(day); err != nil {
-		return nil, err
-	}
-
 	inputCacheDir, err := createCacheDir(year)
 	if err != nil {
 		return nil, err

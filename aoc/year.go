@@ -4,6 +4,8 @@ import (
 	"time"
 )
 
+const FirstYear = 2015
+
 // Timezone is when Eric Wastl unlocks puzzles and starts messing up the
 // sleeping schedules of Europeans.
 var Timezone = time.FixedZone("EST/UTC-5", -5*60*60)
@@ -20,16 +22,15 @@ func Years() []int {
 }
 
 func years(nowf func() time.Time) []int {
-	const startYear = 2015
 	now := nowf()
 	currYear := now.Year()
 
-	if currYear < startYear {
+	if currYear < FirstYear {
 		return []int{}
 	}
 
-	years := make([]int, 0, currYear-startYear+1)
-	for y := startYear; y < currYear; y++ {
+	years := make([]int, 0, currYear-FirstYear+1)
+	for y := FirstYear; y < currYear; y++ {
 		years = append(years, y)
 	}
 

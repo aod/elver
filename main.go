@@ -12,13 +12,15 @@ import (
 	"testing"
 	"time"
 
+	"github.com/aod/elver/aoc"
 	"github.com/aod/elver/flags"
 )
 
 func main() {
 	benchmarkFlag := flag.Bool("b", false, "enable benchmarking")
 
-	year := &flags.IntRange{Value: 0, Min: 2015, Max: 2019}
+	years := aoc.Years()
+	year := &flags.IntRange{Value: 0, Min: aoc.FirstYear, Max: years[len(years)-1]}
 	flag.Var(year, "y", "the `year` to run")
 
 	day := &flags.IntRange{Value: 0, Min: 1, Max: 25}

@@ -1,18 +1,16 @@
 package main
 
 import (
-	"bytes"
 	"flag"
 	"fmt"
 	"os"
-	"os/exec"
 	"path"
 	"plugin"
-	"strings"
 	"testing"
 	"time"
 
 	"github.com/aod/elver/aoc"
+	"github.com/aod/elver/command"
 	"github.com/aod/elver/flags"
 )
 
@@ -53,7 +51,7 @@ func runLatest(cwd, sessionID string, benchmark bool, dirFinder yearDirFinder, s
 		return err
 	}
 
-	err = buildPlugin(yPath)
+	err = command.New("go build -buildmode=plugin").Dir(yPath).Exec()
 	if err != nil {
 		return err
 	}
@@ -118,18 +116,4 @@ func printSolver(day int, part string, solve func() (interface{}, error), benchm
 	} else {
 		fmt.Println(ans)
 	}
-}
-
-func buildPlugin(dir string) error {
-	cmd := exec.Command("go", "build", "-buildmode=plugin")
-	cmd.Dir = dir
-	var outb bytes.Buffer
-	cmd.Stderr = &outb
-
-	if err := cmd.Run(); err != nil {
-		errMsg := strings.Trim(outb.String(), "\n")
-		return fmt.Errorf("failed to run `%s` in %s, %s: %w", cmd, dir, errMsg, err)
-	}
-
-	return nil
 }

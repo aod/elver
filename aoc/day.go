@@ -1,6 +1,8 @@
 package aoc
 
+type Day int
+
 const (
-	FirstDay = 1
-	LastDay  = 25
+	FirstDay Day = 1
+	LastDay      = FirstDay + 24
 )

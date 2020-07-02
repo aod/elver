@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"io"
 	"os"
 	"path"
 	"plugin"
@@ -21,7 +22,7 @@ func main() {
 	year := &flags.IntRange{Value: 0, Min: aoc.FirstYear, Max: years[len(years)-1]}
 	flag.Var(year, "y", "the `year` to run")
 
-	day := &flags.IntRange{Value: 0, Min: aoc.FirstDay, Max: aoc.LastDay}
+	day := &flags.IntRange{Value: 0, Min: int(aoc.FirstDay), Max: int(aoc.LastDay)}
 	flag.Var(day, "d", "the `day` to run")
 
 	flag.Parse()
@@ -70,50 +71,82 @@ func runLatest(cwd, sessionID string, benchmark bool, dirFinder yearDirFinder, s
 	if err != nil {
 		return err
 	}
-	stringInput := string(input)
 
-	fmt.Println("AOC", year)
-	for i, part := range [...]string{"A", "B"} {
-		if solvers[i] != nil {
-			solver := solvers[i]
-			solve := func() (interface{}, error) {
-				return solver(stringInput)
-			}
-			printSolver(day, part, solve, benchmark)
+	stringInput := string(input)
+	for i, solver := range solvers {
+		if solver == nil {
+			continue
 		}
+
+		// FIXME: This is dumb
+		part := aoc.Part1
+		if i == 1 {
+			part = aoc.Part2
+		}
+
+		result := solveResult{
+			day:  aoc.Day(day),
+			part: part,
+		}
+
+		if benchmark {
+			var ans interface{}
+			var err error
+			b := testing.Benchmark(func(b *testing.B) {
+				for i := 0; i < b.N; i++ {
+					if ans, err = solver(stringInput); err != nil {
+						b.FailNow()
+					}
+				}
+			})
+
+			result.answer = ans
+			result.err = err
+			result.kind = resultKind{bench: &b}
+		} else {
+			start := time.Now()
+			ans, err := solver(stringInput)
+			elapsed := time.Since(start)
+
+			result.answer = ans
+			result.err = err
+			result.kind = resultKind{normal: &elapsed}
+		}
+
+		printSolver(os.Stdout, result)
 	}
 
 	return nil
 }
 
-func printSolver(day int, part string, solve func() (interface{}, error), benchmark bool) {
-	fmt.Printf("Day %v %v ", day, part)
+type solveResult struct {
+	day    aoc.Day
+	part   aoc.Part
+	kind   resultKind
+	err    error
+	answer interface{}
+}
 
-	var ans interface{}
-	var err error
+type resultKind struct {
+	bench  *testing.BenchmarkResult
+	normal *time.Duration
+}
 
-	if benchmark {
-		b := testing.Benchmark(func(b *testing.B) {
-			for i := 0; i < b.N; i++ {
-				if ans, err = solve(); err != nil {
-					b.FailNow()
-				}
-			}
-		})
+func printSolver(w io.Writer, s solveResult) {
+	fmt.Fprintf(w, "Day %d %v ", s.day, s.part)
 
-		fmt.Printf("(N=%d, %v ns/op, %v bytes/op, %v allocs/op):\n",
+	switch {
+	case s.kind.bench != nil:
+		b := s.kind.bench
+		fmt.Fprintf(w, "(N=%d, %d ns/op, %d bytes/op, %d allocs/op):\n",
 			b.N, b.NsPerOp(), b.AllocedBytesPerOp(), b.AllocsPerOp())
-	} else {
-		start := time.Now()
-		ans, err = solve()
-		elapsed := time.Since(start)
-
-		fmt.Printf("(%s):\n", elapsed)
+	case s.kind.normal != nil:
+		fmt.Fprintf(w, "(%s):\n", s.kind.normal)
 	}
 
-	if err != nil {
-		fmt.Println("[ERROR]", err)
+	if s.err != nil {
+		fmt.Fprintln(w, "[ERROR]", s.err)
 	} else {
-		fmt.Println(ans)
+		fmt.Fprintln(w, s.answer)
 	}
 }

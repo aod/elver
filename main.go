@@ -21,7 +21,7 @@ func main() {
 	year := &flags.IntRange{Value: 0, Min: aoc.FirstYear, Max: years[len(years)-1]}
 	flag.Var(year, "y", "the `year` to run")
 
-	day := &flags.IntRange{Value: 0, Min: 1, Max: 25}
+	day := &flags.IntRange{Value: 0, Min: aoc.FirstDay, Max: aoc.LastDay}
 	flag.Var(day, "d", "the `day` to run")
 
 	flag.Parse()

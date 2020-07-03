@@ -6,8 +6,6 @@ import (
 	"os"
 	"path"
 	"plugin"
-	"testing"
-	"time"
 
 	"github.com/aod/elver/aoc"
 	"github.com/aod/elver/command"
@@ -70,49 +68,12 @@ func runLatest(cwd, sessionID string, benchmark bool, dirFinder yearDirFinder, s
 	if err != nil {
 		return err
 	}
+
 	stringInput := string(input)
+	fmt.Fprintln(os.Stdout, solverA.solveResult(stringInput, benchmark))
 
-	for i, solver := range [2]*solver{solverA, solverB} {
-		if solver == nil {
-			continue
-		}
-
-		// FIXME: This is dumb
-		part := aoc.Part1
-		if i == 1 {
-			part = aoc.Part2
-		}
-
-		result := solveResult{
-			day:  aoc.Day(day),
-			part: part,
-		}
-
-		if benchmark {
-			var ans interface{}
-			var err error
-			b := testing.Benchmark(func(b *testing.B) {
-				for i := 0; i < b.N; i++ {
-					if ans, err = solver.solve(stringInput); err != nil {
-						b.FailNow()
-					}
-				}
-			})
-
-			result.answer = ans
-			result.err = err
-			result.kind = resultKind{bench: &b}
-		} else {
-			start := time.Now()
-			ans, err := solver.solve(stringInput)
-			elapsed := time.Since(start)
-
-			result.answer = ans
-			result.err = err
-			result.kind = resultKind{normal: &elapsed}
-		}
-
-		fmt.Fprint(os.Stdout, result)
+	if solverB != nil {
+		fmt.Fprintln(os.Stdout, solverB.solveResult(stringInput, benchmark))
 	}
 
 	return nil

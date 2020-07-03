@@ -4,6 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"plugin"
+	"testing"
+	"time"
 
 	"github.com/aod/elver/aoc"
 )
@@ -17,6 +19,40 @@ type solver struct {
 	solve solverFunc
 }
 
+func (s solver) solveResult(input string, benchmark bool) solveResult {
+	result := solveResult{
+		day:  s.day,
+		part: s.part,
+	}
+
+	if benchmark {
+		var ans interface{}
+		var err error
+
+		b := testing.Benchmark(func(b *testing.B) {
+			for i := 0; i < b.N; i++ {
+				if ans, err = s.solve(input); err != nil {
+					b.FailNow()
+				}
+			}
+		})
+
+		result.answer = ans
+		result.err = err
+		result.kind = resultKind{bench: &b}
+	} else {
+		start := time.Now()
+		ans, err := s.solve(input)
+		elapsed := time.Since(start)
+
+		result.answer = ans
+		result.err = err
+		result.kind = resultKind{normal: &elapsed}
+	}
+
+	return result
+}
+
 func pluginSolversAB(p *plugin.Plugin, day aoc.Day) (*solver, *solver, error) {
 	sA, err := pluginSolverX(p, day, aoc.Part1)
 	if err != nil {
@@ -24,7 +60,7 @@ func pluginSolversAB(p *plugin.Plugin, day aoc.Day) (*solver, *solver, error) {
 	}
 
 	sB, err := pluginSolverX(p, day, aoc.Part2)
-	if err != nil {
+	if errors.Is(err, errInvalidSolverSignature) {
 		return nil, nil, fmt.Errorf("error in day %d: %w", day, err)
 	}
 

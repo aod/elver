@@ -36,7 +36,7 @@ func (s solveResult) String() string {
 	if s.err != nil {
 		result += fmt.Sprintf("[ERROR] %s\n", s.err)
 	} else {
-		result += fmt.Sprintf("%v\n", s.answer)
+		result += fmt.Sprintf("%v", s.answer)
 	}
 
 	return result

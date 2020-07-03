@@ -1,0 +1,29 @@
+name: Go
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-go@v2
+      - run: go build -v
+      - uses: actions/upload-artifact@v2
+        with:
+          name: elver-${{github.sha}}
+          path: ./elver
+
+  format:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-go@v2
+      - run: go get -u golang.org/x/tools/cmd/goimports
+      - run: diff --line-format=%L <(goimports -d .) <(echo -n)
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-go@v2
+      - run: go test ./... -v -cover

@@ -1,8 +1,9 @@
-![](./elver.png)
+![](./assets/elver.png)
 
 ![GitHub](https://img.shields.io/github/license/aod/elver)
 ![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/aod/elver)
 ![GitHub tag (latest by date)](https://img.shields.io/github/v/tag/aod/elver)
+![Go](https://github.com/aod/elver/workflows/Go/badge.svg)
 
 Run your Go Advent of Code solutions with a single command. 
 Write your solution and Elver will take care of the rest.

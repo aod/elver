@@ -3,7 +3,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"io"
 	"os"
 	"path"
 	"plugin"
@@ -40,7 +39,7 @@ func main() {
 
 	var solversFinder solversFinder = latestSolversFinder{}
 	if day.Value != 0 {
-		solversFinder = specificDaySolversFinder{day: day.Value}
+		solversFinder = specificDaySolversFinder{day: aoc.Day(day.Value)}
 	}
 
 	handleError(runLatest(cwd, sessionID, *benchmarkFlag, dirFinder, solversFinder))
@@ -62,7 +61,7 @@ func runLatest(cwd, sessionID string, benchmark bool, dirFinder yearDirFinder, s
 		return err
 	}
 
-	day, solvers, err := solversFinder.findSolvers(p)
+	day, solverA, solverB, err := solversFinder.findSolvers(p)
 	if err != nil {
 		return err
 	}
@@ -71,9 +70,9 @@ func runLatest(cwd, sessionID string, benchmark bool, dirFinder yearDirFinder, s
 	if err != nil {
 		return err
 	}
-
 	stringInput := string(input)
-	for i, solver := range solvers {
+
+	for i, solver := range [2]*solver{solverA, solverB} {
 		if solver == nil {
 			continue
 		}
@@ -94,7 +93,7 @@ func runLatest(cwd, sessionID string, benchmark bool, dirFinder yearDirFinder, s
 			var err error
 			b := testing.Benchmark(func(b *testing.B) {
 				for i := 0; i < b.N; i++ {
-					if ans, err = solver(stringInput); err != nil {
+					if ans, err = solver.solve(stringInput); err != nil {
 						b.FailNow()
 					}
 				}
@@ -105,7 +104,7 @@ func runLatest(cwd, sessionID string, benchmark bool, dirFinder yearDirFinder, s
 			result.kind = resultKind{bench: &b}
 		} else {
 			start := time.Now()
-			ans, err := solver(stringInput)
+			ans, err := solver.solve(stringInput)
 			elapsed := time.Since(start)
 
 			result.answer = ans
@@ -113,10 +112,15 @@ func runLatest(cwd, sessionID string, benchmark bool, dirFinder yearDirFinder, s
 			result.kind = resultKind{normal: &elapsed}
 		}
 
-		printSolver(os.Stdout, result)
+		fmt.Fprint(os.Stdout, result)
 	}
 
 	return nil
+}
+
+type resultKind struct {
+	bench  *testing.BenchmarkResult
+	normal *time.Duration
 }
 
 type solveResult struct {
@@ -127,26 +131,23 @@ type solveResult struct {
 	answer interface{}
 }
 
-type resultKind struct {
-	bench  *testing.BenchmarkResult
-	normal *time.Duration
-}
-
-func printSolver(w io.Writer, s solveResult) {
-	fmt.Fprintf(w, "Day %d %v ", s.day, s.part)
+func (s solveResult) String() string {
+	result := fmt.Sprintf("Day %d %v ", s.day, s.part)
 
 	switch {
 	case s.kind.bench != nil:
 		b := s.kind.bench
-		fmt.Fprintf(w, "(N=%d, %d ns/op, %d bytes/op, %d allocs/op):\n",
+		result += fmt.Sprintf("(N=%d, %d ns/op, %d bytes/op, %d allocs/op):\n",
 			b.N, b.NsPerOp(), b.AllocedBytesPerOp(), b.AllocsPerOp())
 	case s.kind.normal != nil:
-		fmt.Fprintf(w, "(%s):\n", s.kind.normal)
+		result += fmt.Sprintf("(%s):\n", s.kind.normal)
 	}
 
 	if s.err != nil {
-		fmt.Fprintln(w, "[ERROR]", s.err)
+		result += fmt.Sprintf("[ERROR] %s\n", s.err)
 	} else {
-		fmt.Fprintln(w, s.answer)
+		result += fmt.Sprintf("%v\n", s.answer)
 	}
+
+	return result
 }

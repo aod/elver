@@ -39,69 +39,40 @@ func (f specificYearDirFinder) findYearDir(cwd string) (int, string, error) {
 	if stat, err := os.Stat(path); err == nil && stat.IsDir() {
 		return f.year, path, nil
 	}
+
 	return 0, "", fmt.Errorf("no advent year %d directory found in %s", f.year, cwd)
 }
 
-type solver = func(string) (interface{}, error)
-
 type solversFinder interface {
-	findSolvers(p *plugin.Plugin) (int, [2]solver, error)
+	findSolvers(p *plugin.Plugin) (aoc.Day, *solver, *solver, error)
 }
 
 type latestSolversFinder struct{}
 
-func (latestSolversFinder) findSolvers(p *plugin.Plugin) (int, [2]solver, error) {
-	var solvers [2]solver
+func (latestSolversFinder) findSolvers(p *plugin.Plugin) (aoc.Day, *solver, *solver, error) {
+	for day := aoc.LastDay; day >= aoc.FirstDay; day-- {
+		sA, sB, err := pluginSolversAB(p, day)
 
-	foundPart := false
-	for day := 25; day > 0; day-- {
-	inner:
-		for i, part := range [...]string{"A", "B"} {
-			v, err := p.Lookup("Day" + strconv.Itoa(day) + part)
-			if err != nil {
-				break inner
-			}
-			foundPart = true
-
-			solver, ok := v.(func(string) (interface{}, error))
-			if !ok {
-				return 0, solvers, fmt.Errorf("found invalid solver signature for day %d: %T, expected: %T", day, v, solver)
-			}
-
-			solvers[i] = solver
+		if errors.Is(err, errInvalidSolverSignature) {
+			return day, nil, nil, err
 		}
-
-		if foundPart {
-			return day, solvers, nil
+		if err == nil {
+			return day, sA, sB, err
 		}
 	}
 
-	return 0, solvers, errors.New("no solvers found")
+	return 0, nil, nil, fmt.Errorf("no solvers found")
 }
 
 type specificDaySolversFinder struct {
-	day int
+	day aoc.Day
 }
 
-func (f specificDaySolversFinder) findSolvers(p *plugin.Plugin) (int, [2]solver, error) {
-	var solvers [2]solver
-
-	for i, part := range [...]string{"A", "B"} {
-		v, err := p.Lookup("Day" + strconv.Itoa(f.day) + part)
-		if err != nil {
-			if i != 0 {
-				return f.day, solvers, nil
-			}
-			return 0, solvers, fmt.Errorf("no solvers found for day %d", f.day)
-		}
-
-		solver, ok := v.(func(string) (interface{}, error))
-		if !ok {
-			return 0, solvers, fmt.Errorf("found invalid solver signature for day %d: got %T, expected %T", f.day, v, solver)
-		}
-
-		solvers[i] = solver
+func (f specificDaySolversFinder) findSolvers(p *plugin.Plugin) (aoc.Day, *solver, *solver, error) {
+	sA, sB, err := pluginSolversAB(p, f.day)
+	if err != nil {
+		return 0, nil, nil, err
 	}
 
-	return f.day, solvers, nil
+	return f.day, sA, sB, err
 }

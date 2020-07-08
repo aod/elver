@@ -16,7 +16,7 @@ func fetch(req *http.Request) ([]byte, error) {
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusOK {
+	if resp.StatusCode >= 400 {
 		return nil, errors.New(resp.Status)
 	}
 

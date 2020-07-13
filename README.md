@@ -58,8 +58,19 @@ $ go get github.com/aod/elver
 
 ## 2. Cookie
 
+### 2.a Environment variable
+
 Set your Advent of Code session token in the environment variable `AOC_SESSION`.
 This variable is used to automatically download your inputs and cache them.
+
+### 2.b Config file
+
+Alternatively you can store your session ID in the `aoc_session` file in the
+following directory:
+
+- Windows: `%AppData%\elver\`
+- MacOS: `/Library/Application Support/elver/`
+- Linux: `$HOME/.config/elver/`
 
 # Benchmarking
 

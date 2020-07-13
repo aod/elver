@@ -6,6 +6,7 @@ import (
 	"os"
 	"path"
 	"plugin"
+	"strings"
 
 	"github.com/aod/elver/aoc"
 	"github.com/aod/elver/command"
@@ -31,6 +32,7 @@ func main() {
 	config.SetAppName("elver")
 	sessionID, err := config.EnvOrConfigContents("AOC_SESSION", "aoc_session")
 	handleError(err)
+	sessionID = strings.TrimSpace(sessionID)
 
 	var dirFinder yearDirFinder = latestYearDirFinder{}
 	if year.Value != 0 {

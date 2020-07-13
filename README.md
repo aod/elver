@@ -3,7 +3,7 @@
 ---
 
 [Features](#features)
-| [How it works](#how-it-works)
+| [How it works](#how-does-it-works)
 | [Quick start](#quick-start)
 | [Benchmarking](#benchmarking)
 | [Examples](#examples)

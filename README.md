@@ -74,6 +74,32 @@ Day 1 B (N=0, 0 ns/op, 0 bytes/op, 0 allocs/op):
 [ERROR] Not implemented
 ```
 
+# Examples
+
+Running the latest **solver**:
+
+```console
+$ elver
+```
+
+Running the latest **solver** of a specific year:
+
+```console
+$ elver -y 2017
+```
+
+Running the specific **solver** of a year and day:
+
+```console
+$ elver -y 2017 -d 21
+```
+
+Benchmarking a **solver** by adding the `-b` flag
+
+```console
+$ elver ... -b
+```
+
 # Similar
 
 These type of utility tools for Advent of Code als exist for other programming languages like

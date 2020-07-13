@@ -34,11 +34,3 @@ func handleError(err error) {
 		os.Exit(1)
 	}
 }
-
-func env(name string) (value string, err error) {
-	value, ok := os.LookupEnv(name)
-	if !ok {
-		err = fmt.Errorf("no environment variable `%s` found", name)
-	}
-	return
-}

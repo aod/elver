@@ -45,7 +45,7 @@ func createCacheDir(year int) (string, error) {
 		return "", err
 	}
 
-	cacheDir = filepath.Join(cacheDir, "aoc-inputs")
+	cacheDir = filepath.Join(cacheDir, "elver", "aoc-inputs")
 	inputFileDir := filepath.Join(cacheDir, strconv.Itoa(year))
 
 	if err := os.MkdirAll(inputFileDir, 0744); err != nil {

@@ -110,6 +110,12 @@ Running the latest **solver** of a specific year:
 $ elver -y 2017
 ```
 
+Running the latest **solver** of a specific day:
+
+```console
+$ elver -d 21
+```
+
 Running the specific **solver** of a year and day:
 
 ```console
@@ -119,7 +125,7 @@ $ elver -y 2017 -d 21
 Benchmarking a **solver** by adding the `-b` flag
 
 ```console
-$ elver ... -b
+$ elver -b
 ```
 
 # Similar

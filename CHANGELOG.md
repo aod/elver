@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## Unreleased
+
+## [0.4.2] - 2020-21-07
 ### Added
 - Besides the `AOC_SESSION` environment variable, the session ID can now
   _also_ be stored in a file `aoc_session` inside the elver config dir. (The

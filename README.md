@@ -1,5 +1,16 @@
 ![](./assets/elver.png)
 
+---
+
+[Features](#features)
+| [How does it work?](#how-does-it-work)
+| [Quick start](#quick-start)
+| [Benchmarking](#benchmarking)
+| [Examples](#examples)
+| [Similar](#similar)
+
+---
+
 ![GitHub](https://img.shields.io/github/license/aod/elver)
 ![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/aod/elver)
 ![GitHub tag (latest by date)](https://img.shields.io/github/v/tag/aod/elver)
@@ -58,8 +69,19 @@ $ go get github.com/aod/elver
 
 ## 2. Cookie
 
+### 2.a Environment variable
+
 Set your Advent of Code session token in the environment variable `AOC_SESSION`.
 This variable is used to automatically download your inputs and cache them.
+
+### 2.b Config file
+
+Alternatively you can store your session ID in the `aoc_session` file in the
+following directory:
+
+- Windows: `%AppData%\elver\`
+- MacOS: `/Library/Application Support/elver/`
+- Linux: `$HOME/.config/elver/`
 
 # Benchmarking
 
@@ -72,6 +94,38 @@ Day 1 A (N=231919370, 5 ns/op, 0 bytes/op, 0 allocs/op):
 42
 Day 1 B (N=0, 0 ns/op, 0 bytes/op, 0 allocs/op):
 [ERROR] Not implemented
+```
+
+# Examples
+
+Running the latest **solver**:
+
+```console
+$ elver
+```
+
+Running the latest **solver** of a specific year:
+
+```console
+$ elver -y 2017
+```
+
+Running the latest **solver** of a specific day:
+
+```console
+$ elver -d 21
+```
+
+Running the specific **solver** of a year and day:
+
+```console
+$ elver -y 2017 -d 21
+```
+
+Benchmarking a **solver** by adding the `-b` flag
+
+```console
+$ elver -b
 ```
 
 # Similar

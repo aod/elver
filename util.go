@@ -16,7 +16,7 @@ func fetch(req *http.Request) ([]byte, error) {
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusOK {
+	if resp.StatusCode >= 400 {
 		return nil, errors.New(resp.Status)
 	}
 
@@ -33,12 +33,4 @@ func handleError(err error) {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
-}
-
-func env(name string) (value string, err error) {
-	value, ok := os.LookupEnv(name)
-	if !ok {
-		err = fmt.Errorf("no environment variable `%s` found", name)
-	}
-	return
 }

@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"io"
 	"os"
 	"path"
 	"plugin"
@@ -30,9 +31,12 @@ func main() {
 	handleError(err)
 
 	config.SetAppName("elver")
-	sessionID, err := config.EnvOrConfigContents("AOC_SESSION", "aoc_session")
+	sessReader, err := config.EnvOrConfigContents("AOC_SESSION", "aoc_session")
 	handleError(err)
-	sessionID = strings.TrimSpace(sessionID)
+	buf := new(strings.Builder)
+	_, err = io.Copy(buf, sessReader)
+	handleError(err)
+	sessionID := strings.TrimSpace(buf.String())
 
 	var dirFinder yearDirFinder = latestYearDirFinder{}
 	if year.Value != 0 {

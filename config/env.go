@@ -1,30 +1,33 @@
 package config
 
 import (
+	"bytes"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
-func EnvOrConfigContents(envar, file string) (string, error) {
+func EnvOrConfigContents(envar, file string) (io.Reader, error) {
 	val, err := env(envar)
 	if err == nil {
-		return val, err
+		return strings.NewReader(val), nil
 	}
 
 	baseConfigDir, err := os.UserConfigDir()
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	path := filepath.Join(baseConfigDir, appName, file)
 	b, err := ioutil.ReadFile(path)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	return string(b), nil
+	return bytes.NewReader(b), nil
 }
 
 func env(name string) (value string, err error) {

@@ -96,7 +96,6 @@ func TestInvalidDateRange(t *testing.T) {
 	}
 }
 
-
 func TestDateRangeGen(t *testing.T) {
 	tests := []struct {
 		in   string
@@ -138,6 +137,16 @@ func TestDateRangeGen(t *testing.T) {
 				time.Date(2016, 12, 3, 0, 0, 0, 0, Timezone),
 				time.Date(2016, 12, 4, 0, 0, 0, 0, Timezone),
 				time.Date(2016, 12, 5, 0, 0, 0, 0, Timezone),
+			},
+		},
+		{
+			in: ":2015-05",
+			want: []time.Time{
+				time.Date(2015, 12, 1, 0, 0, 0, 0, Timezone),
+				time.Date(2015, 12, 2, 0, 0, 0, 0, Timezone),
+				time.Date(2015, 12, 3, 0, 0, 0, 0, Timezone),
+				time.Date(2015, 12, 4, 0, 0, 0, 0, Timezone),
+				time.Date(2015, 12, 5, 0, 0, 0, 0, Timezone),
 			},
 		},
 	}

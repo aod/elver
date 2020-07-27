@@ -2,6 +2,7 @@ package aoc
 
 import (
 	"errors"
+	"fmt"
 	"reflect"
 	"testing"
 	"time"
@@ -175,4 +176,38 @@ func TestDateRangeGen(t *testing.T) {
 			}
 		})
 	}
+}
+
+func ExampleParseDateRange() {
+	dr, _ := ParseDateRange(":2015-05")
+	for v := range dr.Gen() {
+		fmt.Println(v.Year(), v.Day())
+	}
+
+	// Output:
+	// 2015 1
+	// 2015 2
+	// 2015 3
+	// 2015 4
+	// 2015 5
+}
+
+func ExampleParseDateRange_overflow() {
+	dr, _ := ParseDateRange("2017-20:2018-05")
+	for v := range dr.Gen() {
+		fmt.Println(v.Year(), v.Day())
+	}
+
+	// Output:
+	// 2017 20
+	// 2017 21
+	// 2017 22
+	// 2017 23
+	// 2017 24
+	// 2017 25
+	// 2018 1
+	// 2018 2
+	// 2018 3
+	// 2018 4
+	// 2018 5
 }

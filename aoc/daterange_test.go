@@ -2,6 +2,7 @@ package aoc
 
 import (
 	"errors"
+	"reflect"
 	"testing"
 	"time"
 )
@@ -90,6 +91,78 @@ func TestInvalidDateRange(t *testing.T) {
 
 			if !errors.Is(err, tt.err) {
 				t.Errorf("got %q, want %q", err, tt.err)
+			}
+		})
+	}
+}
+
+
+func TestDateRangeGen(t *testing.T) {
+	tests := []struct {
+		in   string
+		want []time.Time
+	}{
+		{
+			in: "2015-05:2015-10",
+			want: []time.Time{
+				time.Date(2015, 12, 5, 0, 0, 0, 0, Timezone),
+				time.Date(2015, 12, 6, 0, 0, 0, 0, Timezone),
+				time.Date(2015, 12, 7, 0, 0, 0, 0, Timezone),
+				time.Date(2015, 12, 8, 0, 0, 0, 0, Timezone),
+				time.Date(2015, 12, 9, 0, 0, 0, 0, Timezone),
+				time.Date(2015, 12, 10, 0, 0, 0, 0, Timezone),
+			},
+		},
+		{
+			in: "2015-10:2015-05",
+			want: []time.Time{
+				time.Date(2015, 12, 5, 0, 0, 0, 0, Timezone),
+				time.Date(2015, 12, 6, 0, 0, 0, 0, Timezone),
+				time.Date(2015, 12, 7, 0, 0, 0, 0, Timezone),
+				time.Date(2015, 12, 8, 0, 0, 0, 0, Timezone),
+				time.Date(2015, 12, 9, 0, 0, 0, 0, Timezone),
+				time.Date(2015, 12, 10, 0, 0, 0, 0, Timezone),
+			},
+		},
+		{
+			in: "2015-20:2016-05",
+			want: []time.Time{
+				time.Date(2015, 12, 20, 0, 0, 0, 0, Timezone),
+				time.Date(2015, 12, 21, 0, 0, 0, 0, Timezone),
+				time.Date(2015, 12, 22, 0, 0, 0, 0, Timezone),
+				time.Date(2015, 12, 23, 0, 0, 0, 0, Timezone),
+				time.Date(2015, 12, 24, 0, 0, 0, 0, Timezone),
+				time.Date(2015, 12, 25, 0, 0, 0, 0, Timezone),
+				time.Date(2016, 12, 1, 0, 0, 0, 0, Timezone),
+				time.Date(2016, 12, 2, 0, 0, 0, 0, Timezone),
+				time.Date(2016, 12, 3, 0, 0, 0, 0, Timezone),
+				time.Date(2016, 12, 4, 0, 0, 0, 0, Timezone),
+				time.Date(2016, 12, 5, 0, 0, 0, 0, Timezone),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.in, func(t *testing.T) {
+			r, err := ParseDateRange(tt.in)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			c := r.Gen()
+			if c == nil {
+				t.Fatal("chan is nil")
+			}
+
+			var got []time.Time
+			for v := range c {
+				got = append(got, v)
+			}
+
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("got: %v", got)
+				t.Errorf("want: %v", tt.want)
+				t.Errorf("%d != %d", len(got), len(tt.want))
 			}
 		})
 	}

@@ -14,20 +14,28 @@ type DateRange struct {
 }
 
 func (d DateRange) Gen() <-chan time.Time {
-	return nil
+	out := make(chan time.Time)
 
-	// if d.err != nil {
-	// 	return nil
-	// }
+	go func() {
+		defer close(out)
 
-	// out := make(chan time.Time)
+		if d.err != nil {
+			return
+		}
 
-	// go func() {
-	// 	for {
-	// 	}
-	// }()
+		t := d.Start
+		for t.Before(d.End) || t.Equal(d.End) {
+			out <- t
 
-	// return out
+			if t.Day() >= 25 {
+				t = time.Date(t.Year()+1, time.December, int(FirstDay), 0, 0, 0, 0, Timezone)
+			} else {
+				t = t.AddDate(0, 0, 1)
+			}
+		}
+	}()
+
+	return out
 }
 
 func (d DateRange) Err() error {
@@ -109,7 +117,8 @@ func parseDate(s string) (time.Time, error) {
 		return time.Time{}, ErrDateRangeDateNotAnAoC
 	}
 
-	return time.Now(), nil
+	t = time.Date(t.Year(), time.December, t.Day(), 0, 0, 0, 0, Timezone)
+	return t, nil
 }
 
 func LatestAoCTime() time.Time {

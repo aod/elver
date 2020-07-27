@@ -48,10 +48,10 @@ func main() {
 		solversFinder = specificDaySolversFinder{day: aoc.Day(day.Value)}
 	}
 
-	handleError(runLatest(cwd, sessionID, *benchmarkFlag, dirFinder, solversFinder))
+	handleError(run(cwd, sessionID, *benchmarkFlag, dirFinder, solversFinder))
 }
 
-func runLatest(cwd, sessionID string, benchmark bool, dirFinder yearDirFinder, solversFinder solversFinder) error {
+func run(cwd, sessionID string, benchmark bool, dirFinder yearDirFinder, solversFinder solversFinder) error {
 	year, yPath, err := dirFinder.findYearDir(cwd)
 	if err != nil {
 		return err

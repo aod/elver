@@ -10,10 +10,6 @@ const FirstYear = 2015
 // sleeping schedules of Europeans.
 var Timezone = time.FixedZone("EST/UTC-5", -5*60*60)
 
-func nowLocal() time.Time {
-	return time.Now()
-}
-
 // Years returns all released AoCs years in ascending order. It should be
 // noted that this uses the local time of the user's machine. Which when messed
 // with could lead to an incorrect list of AoC years.

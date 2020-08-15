@@ -82,6 +82,8 @@ func run(cwd, sessionID string, benchmark bool, dirFinder yearDirFinder, solvers
 		return err
 	}
 
+	fmt.Println("AOC", year)
+
 	stringInput := string(input)
 	fmt.Fprintln(os.Stdout, solverA.solveResult(stringInput, benchmark))
 

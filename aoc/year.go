@@ -15,7 +15,7 @@ func (y Year) String() string {
 	return strconv.Itoa(int(y))
 }
 
-// FindDir tries to find the Advent of Code year dir given the cwd.
+// FindDir tries to find the Advent of Code year as a dir in given the cwd.
 func (y Year) FindDir(cwd string) (string, error) {
 	path := filepath.Join(cwd, y.String())
 	if _, err := os.Stat(path); err != nil {
@@ -27,10 +27,11 @@ func (y Year) FindDir(cwd string) (string, error) {
 // FirstYear is the year when the first Advent of Code was released.
 const FirstYear = Year(2015)
 
-// AdventYears represents a collection of Advent of Code years
+// AdventYears represents a collection of Advent of Code years.
 type AdventYears []Year
 
-// FirstYearDir TODO
+// FirstYearDir tries to find and return a path of the first aoc year where the
+// year exists as a dir in the given cwd.
 func (years AdventYears) FirstYearDir(cwd string) (Year, string, error) {
 	for _, y := range years {
 		p, err := y.FindDir(cwd)

@@ -1,3 +1,6 @@
+// Package command is a simple bare-bones wrapper around the std "os/exec" package.
+// The main feature is that the Exec function captures stderr output in the
+// returned error value.
 package command
 
 import (

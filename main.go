@@ -5,8 +5,9 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"path"
+	"path/filepath"
 	"plugin"
+	"strconv"
 	"strings"
 
 	"github.com/aod/elver/aoc"
@@ -57,12 +58,18 @@ func run(cwd, sessionID string, benchmark bool, dirFinder yearDirFinder, solvers
 		return err
 	}
 
-	err = command.New("go build -buildmode=plugin").Dir(yPath).Exec()
+	cacheDir, err := os.UserCacheDir()
+	if err != nil {
+		return err
+	}
+	buildFile := filepath.Join(cacheDir, "elver", "builds", strconv.Itoa(year))
+
+	err = command.New("go build -buildmode=plugin -o=" + buildFile).Dir(yPath).Exec()
 	if err != nil {
 		return err
 	}
 
-	p, err := plugin.Open(path.Join(yPath, fmt.Sprintf("%d.so", year)))
+	p, err := plugin.Open(buildFile)
 	if err != nil {
 		return err
 	}

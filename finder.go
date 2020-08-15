@@ -3,9 +3,8 @@ package main
 import (
 	"errors"
 	"fmt"
-	"os"
-	"path/filepath"
 	"plugin"
+	"sort"
 
 	"github.com/aod/elver/aoc"
 )
@@ -18,15 +17,12 @@ type latestYearDirFinder struct{}
 
 func (latestYearDirFinder) findYearDir(cwd string) (aoc.Year, string, error) {
 	years := aoc.Years()
-	for i := len(years) - 1; i >= 0; i-- {
-		path := filepath.Join(cwd, years[i].String())
-
-		if stat, err := os.Stat(path); err == nil && stat.IsDir() {
-			return years[i], path, nil
-		}
+	sort.Sort(sort.Reverse(years))
+	year, path, err := years.FirstYearDir(cwd)
+	if err != nil {
+		return 0, "", fmt.Errorf("no advent year directory found in %s: %w", cwd, err)
 	}
-
-	return 0, "", fmt.Errorf("no advent year directory found in %s", cwd)
+	return year, path, nil
 }
 
 type specificYearDirFinder struct {
@@ -34,12 +30,11 @@ type specificYearDirFinder struct {
 }
 
 func (f specificYearDirFinder) findYearDir(cwd string) (aoc.Year, string, error) {
-	path := filepath.Join(cwd, f.year.String())
-	if stat, err := os.Stat(path); err == nil && stat.IsDir() {
-		return f.year, path, nil
+	p, err := f.year.FindDir(cwd)
+	if err != nil {
+		return 0, "", fmt.Errorf("no advent year %d directory found in %s: %w", f.year, cwd, err)
 	}
-
-	return 0, "", fmt.Errorf("no advent year %d directory found in %s", f.year, cwd)
+	return f.year, p, nil
 }
 
 type solversFinder interface {

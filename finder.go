@@ -6,21 +6,20 @@ import (
 	"os"
 	"path/filepath"
 	"plugin"
-	"strconv"
 
 	"github.com/aod/elver/aoc"
 )
 
 type yearDirFinder interface {
-	findYearDir(string) (int, string, error)
+	findYearDir(string) (aoc.Year, string, error)
 }
 
 type latestYearDirFinder struct{}
 
-func (latestYearDirFinder) findYearDir(cwd string) (int, string, error) {
+func (latestYearDirFinder) findYearDir(cwd string) (aoc.Year, string, error) {
 	years := aoc.Years()
 	for i := len(years) - 1; i >= 0; i-- {
-		path := filepath.Join(cwd, strconv.Itoa(years[i]))
+		path := filepath.Join(cwd, years[i].String())
 
 		if stat, err := os.Stat(path); err == nil && stat.IsDir() {
 			return years[i], path, nil
@@ -31,11 +30,11 @@ func (latestYearDirFinder) findYearDir(cwd string) (int, string, error) {
 }
 
 type specificYearDirFinder struct {
-	year int
+	year aoc.Year
 }
 
-func (f specificYearDirFinder) findYearDir(cwd string) (int, string, error) {
-	path := filepath.Join(cwd, strconv.Itoa(f.year))
+func (f specificYearDirFinder) findYearDir(cwd string) (aoc.Year, string, error) {
+	path := filepath.Join(cwd, f.year.String())
 	if stat, err := os.Stat(path); err == nil && stat.IsDir() {
 		return f.year, path, nil
 	}

@@ -7,7 +7,6 @@ import (
 	"os"
 	"path/filepath"
 	"plugin"
-	"strconv"
 	"strings"
 
 	"github.com/aod/elver/aoc"
@@ -19,8 +18,7 @@ import (
 func main() {
 	benchmarkFlag := flag.Bool("b", false, "enable benchmarking")
 
-	years := aoc.Years()
-	year := &flags.IntRange{Value: 0, Min: aoc.FirstYear, Max: years[len(years)-1]}
+	year := &flags.IntRange{Value: 0, Min: int(aoc.FirstYear), Max: int(aoc.LastYear())}
 	flag.Var(year, "y", "the `year` to run")
 
 	day := &flags.IntRange{Value: 0, Min: int(aoc.FirstDay), Max: int(aoc.LastDay)}
@@ -41,7 +39,7 @@ func main() {
 
 	var dirFinder yearDirFinder = latestYearDirFinder{}
 	if year.Value != 0 {
-		dirFinder = specificYearDirFinder{year: year.Value}
+		dirFinder = specificYearDirFinder{year: aoc.Year(year.Value)}
 	}
 
 	var solversFinder solversFinder = latestSolversFinder{}
@@ -62,7 +60,7 @@ func run(cwd, sessionID string, benchmark bool, dirFinder yearDirFinder, solvers
 	if err != nil {
 		return err
 	}
-	buildFile := filepath.Join(cacheDir, "elver", "builds", strconv.Itoa(year))
+	buildFile := filepath.Join(cacheDir, "elver", "builds", year.String())
 
 	err = command.New("go build -buildmode=plugin -o=" + buildFile).Dir(yPath).Exec()
 	if err != nil {

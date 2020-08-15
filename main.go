@@ -30,7 +30,7 @@ func main() {
 	handleError(err)
 
 	config.SetAppName("elver")
-	sessReader, err := config.EnvOrConfigContents("AOC_SESSION", "aoc_session")
+	sessReader, err := config.EnvOrContents("AOC_SESSION", "aoc_session")
 	handleError(err)
 	buf := new(strings.Builder)
 	_, err = io.Copy(buf, sessReader)

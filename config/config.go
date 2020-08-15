@@ -1,3 +1,8 @@
+// Package config providies ways to retrieve configurations and such from the
+// user's profile.
+// To use this package correctly one must run `config.SetAppName` first which
+// sets the global appName variable.
+// This value is used to look up application-specific configurations, cache files, etc.
 package config
 
 import (
@@ -8,7 +13,9 @@ import (
 	"path/filepath"
 )
 
-func ConfigContents(file string) (io.Reader, error) {
+// Contents returns an io.Reader with the given configuration file
+// contents.
+func Contents(file string) (io.Reader, error) {
 	baseConfigDir, err := configDir()
 	if err != nil {
 		return nil, err

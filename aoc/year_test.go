@@ -9,27 +9,27 @@ import (
 func TestYears(t *testing.T) {
 	testCases := []struct {
 		t    time.Time
-		want []int
+		want AdventYears
 		desc string
 	}{
 		{
 			t:    time.Date(2015, time.December, 1, 4, 59, 59, 0, time.UTC),
-			want: []int{},
+			want: AdventYears{},
 			desc: "Pre AoC",
 		},
 		{
 			t:    time.Date(2015, time.December, 1, 5, 0, 0, 1, time.UTC),
-			want: []int{2015},
+			want: AdventYears{2015},
 			desc: "First AoC",
 		},
 		{
 			t:    time.Date(2016, time.December, 1, 4, 59, 59, 0, time.UTC),
-			want: []int{2015},
+			want: AdventYears{2015},
 			desc: "Close to 2nd",
 		},
 		{
 			t:    time.Date(2016, time.December, 1, 5, 0, 0, 1, time.UTC),
-			want: []int{2015, 2016},
+			want: AdventYears{2015, 2016},
 			desc: "2nd AoC",
 		},
 	}

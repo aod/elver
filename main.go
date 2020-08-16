@@ -3,8 +3,9 @@ package main
 import (
 	"flag"
 	"fmt"
+	"io"
 	"os"
-	"path"
+	"path/filepath"
 	"plugin"
 	"strings"
 
@@ -17,8 +18,7 @@ import (
 func main() {
 	benchmarkFlag := flag.Bool("b", false, "enable benchmarking")
 
-	years := aoc.Years()
-	year := &flags.IntRange{Value: 0, Min: aoc.FirstYear, Max: years[len(years)-1]}
+	year := &flags.IntRange{Value: 0, Min: int(aoc.FirstYear), Max: int(aoc.LastYear())}
 	flag.Var(year, "y", "the `year` to run")
 
 	day := &flags.IntRange{Value: 0, Min: int(aoc.FirstDay), Max: int(aoc.LastDay)}
@@ -30,13 +30,16 @@ func main() {
 	handleError(err)
 
 	config.SetAppName("elver")
-	sessionID, err := config.EnvOrConfigContents("AOC_SESSION", "aoc_session")
+	sessReader, err := config.EnvOrContents("AOC_SESSION", "aoc_session")
 	handleError(err)
-	sessionID = strings.TrimSpace(sessionID)
+	buf := new(strings.Builder)
+	_, err = io.Copy(buf, sessReader)
+	handleError(err)
+	sessionID := strings.TrimSpace(buf.String())
 
 	var dirFinder yearDirFinder = latestYearDirFinder{}
 	if year.Value != 0 {
-		dirFinder = specificYearDirFinder{year: year.Value}
+		dirFinder = specificYearDirFinder{year: aoc.Year(year.Value)}
 	}
 
 	var solversFinder solversFinder = latestSolversFinder{}
@@ -44,21 +47,27 @@ func main() {
 		solversFinder = specificDaySolversFinder{day: aoc.Day(day.Value)}
 	}
 
-	handleError(runLatest(cwd, sessionID, *benchmarkFlag, dirFinder, solversFinder))
+	handleError(run(cwd, sessionID, *benchmarkFlag, dirFinder, solversFinder))
 }
 
-func runLatest(cwd, sessionID string, benchmark bool, dirFinder yearDirFinder, solversFinder solversFinder) error {
+func run(cwd, sessionID string, benchmark bool, dirFinder yearDirFinder, solversFinder solversFinder) error {
 	year, yPath, err := dirFinder.findYearDir(cwd)
 	if err != nil {
 		return err
 	}
 
-	err = command.New("go build -buildmode=plugin").Dir(yPath).Exec()
+	cacheDir, err := os.UserCacheDir()
+	if err != nil {
+		return err
+	}
+	buildFile := filepath.Join(cacheDir, "elver", "builds", year.String())
+
+	err = command.New("go build -buildmode=plugin -o=" + buildFile).Dir(yPath).Exec()
 	if err != nil {
 		return err
 	}
 
-	p, err := plugin.Open(path.Join(yPath, fmt.Sprintf("%d.so", year)))
+	p, err := plugin.Open(buildFile)
 	if err != nil {
 		return err
 	}
@@ -72,6 +81,8 @@ func runLatest(cwd, sessionID string, benchmark bool, dirFinder yearDirFinder, s
 	if err != nil {
 		return err
 	}
+
+	fmt.Println("AOC", year)
 
 	stringInput := string(input)
 	fmt.Fprintln(os.Stdout, solverA.solveResult(stringInput, benchmark))

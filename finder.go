@@ -3,44 +3,38 @@ package main
 import (
 	"errors"
 	"fmt"
-	"os"
-	"path/filepath"
 	"plugin"
-	"strconv"
+	"sort"
 
 	"github.com/aod/elver/aoc"
 )
 
 type yearDirFinder interface {
-	findYearDir(string) (int, string, error)
+	findYearDir(string) (aoc.Year, string, error)
 }
 
 type latestYearDirFinder struct{}
 
-func (latestYearDirFinder) findYearDir(cwd string) (int, string, error) {
+func (latestYearDirFinder) findYearDir(cwd string) (aoc.Year, string, error) {
 	years := aoc.Years()
-	for i := len(years) - 1; i >= 0; i-- {
-		path := filepath.Join(cwd, strconv.Itoa(years[i]))
-
-		if stat, err := os.Stat(path); err == nil && stat.IsDir() {
-			return years[i], path, nil
-		}
+	sort.Sort(sort.Reverse(years))
+	year, path, err := years.FirstYearDir(cwd)
+	if err != nil {
+		return 0, "", fmt.Errorf("no advent year directory found in %s: %w", cwd, err)
 	}
-
-	return 0, "", fmt.Errorf("no advent year directory found in %s", cwd)
+	return year, path, nil
 }
 
 type specificYearDirFinder struct {
-	year int
+	year aoc.Year
 }
 
-func (f specificYearDirFinder) findYearDir(cwd string) (int, string, error) {
-	path := filepath.Join(cwd, strconv.Itoa(f.year))
-	if stat, err := os.Stat(path); err == nil && stat.IsDir() {
-		return f.year, path, nil
+func (f specificYearDirFinder) findYearDir(cwd string) (aoc.Year, string, error) {
+	p, err := f.year.FindDir(cwd)
+	if err != nil {
+		return 0, "", fmt.Errorf("no advent year %d directory found in %s: %w", f.year, cwd, err)
 	}
-
-	return 0, "", fmt.Errorf("no advent year %d directory found in %s", f.year, cwd)
+	return f.year, p, nil
 }
 
 type solversFinder interface {

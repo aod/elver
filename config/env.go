@@ -2,29 +2,19 @@ package config
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"os"
-	"path/filepath"
+	"strings"
 )
 
-func EnvOrConfigContents(envar, file string) (string, error) {
+// EnvOrContents returns the environment variable envar or configuration
+// contents of file.
+func EnvOrContents(envar, file string) (io.Reader, error) {
 	val, err := env(envar)
 	if err == nil {
-		return val, err
+		return strings.NewReader(val), nil
 	}
-
-	baseConfigDir, err := os.UserConfigDir()
-	if err != nil {
-		return "", err
-	}
-
-	path := filepath.Join(baseConfigDir, appName, file)
-	b, err := ioutil.ReadFile(path)
-	if err != nil {
-		return "", err
-	}
-
-	return string(b), nil
+	return Contents(file)
 }
 
 func env(name string) (value string, err error) {
@@ -32,6 +22,5 @@ func env(name string) (value string, err error) {
 	if !ok {
 		err = fmt.Errorf("no environment variable `%s` found", name)
 	}
-
 	return
 }

@@ -1,3 +1,6 @@
+// Package command is a simple bare-bones wrapper around the std "os/exec" package.
+// The main feature is that the Exec function captures stderr output in the
+// returned error value.
 package command
 
 import (
@@ -7,9 +10,10 @@ import (
 	"strings"
 )
 
+// Interface uses a builder-like pattern to run programs via the terminal.
 type Interface interface {
-	Dir(string) Interface
-	Exec() error
+	Dir(string) Interface // Changes the current working directory.
+	Exec() error          // Executes the command and returns an error if any.
 }
 
 type command struct {
@@ -34,6 +38,7 @@ func (c *command) Exec() error {
 	return nil
 }
 
+// New returns a new command runner using cmd as the command to run.
 func New(cmd string) Interface {
 	cmdSplit := strings.Split(cmd, " ")
 	name := cmdSplit[0]

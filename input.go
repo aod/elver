@@ -11,7 +11,7 @@ import (
 	"github.com/aod/elver/aoc"
 )
 
-func getInput(year int, day aoc.Day, sessionID string) ([]byte, error) {
+func getInput(year aoc.Year, day aoc.Day, sessionID string) ([]byte, error) {
 	inputCacheDir, err := createCacheDir(year)
 	if err != nil {
 		return nil, err
@@ -39,14 +39,14 @@ func getInput(year int, day aoc.Day, sessionID string) ([]byte, error) {
 	return ioutil.ReadFile(inputFile)
 }
 
-func createCacheDir(year int) (string, error) {
+func createCacheDir(year aoc.Year) (string, error) {
 	cacheDir, err := os.UserCacheDir()
 	if err != nil {
 		return "", err
 	}
 
 	cacheDir = filepath.Join(cacheDir, "elver", "aoc-inputs")
-	inputFileDir := filepath.Join(cacheDir, strconv.Itoa(year))
+	inputFileDir := filepath.Join(cacheDir, year.String())
 
 	if err := os.MkdirAll(inputFileDir, 0744); err != nil {
 		return "", err
@@ -54,7 +54,7 @@ func createCacheDir(year int) (string, error) {
 	return inputFileDir, nil
 }
 
-func createInputRequest(year int, day aoc.Day, sessionID string) (*http.Request, error) {
+func createInputRequest(year aoc.Year, day aoc.Day, sessionID string) (*http.Request, error) {
 	url := fmt.Sprintf("https://adventofcode.com/%d/day/%d/input", year, day)
 
 	req, err := http.NewRequest("GET", url, nil)

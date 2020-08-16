@@ -2,6 +2,7 @@ package flags_test
 
 import (
 	"flag"
+	"fmt"
 	"io/ioutil"
 	"testing"
 
@@ -58,4 +59,16 @@ func TestIntRangeFlagSet(t *testing.T) {
 			}
 		})
 	}
+}
+
+func ExampleIntRange() {
+	fs := flag.NewFlagSet("example usage of IntRange", flag.ContinueOnError)
+
+	ir := flags.IntRange{Min: 0, Max: 10}
+	fs.Var(&ir, "num", "select a number between 1 to 10")
+
+	fs.Parse([]string{"-num", "6"})
+
+	fmt.Println(ir.Value)
+	// Output: 6
 }

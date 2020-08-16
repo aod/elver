@@ -1,8 +1,15 @@
-// Package config providies ways to retrieve configurations and such from the
-// user's profile.
-// To use this package correctly one must run `config.SetAppName` first which
-// sets the global appName variable.
-// This value is used to look up application-specific configurations, cache files, etc.
+/*
+Package config providies ways to retrieve configurations and such from the
+user's profile.
+
+To use this package correctly one must run
+
+	config.SetAppName("myappname")
+
+first which sets the global appName variable.
+
+This value is used to look up application-specific configurations, cache files, etc.
+*/
 package config
 
 import (

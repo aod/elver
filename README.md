@@ -17,7 +17,7 @@
 [![Go](https://github.com/aod/elver/workflows/Go/badge.svg)](https://github.com/aod/elver/actions?query=workflow%3AGo)
 [![PkgGoDev](https://pkg.go.dev/badge/github.com/aod/elver)](https://pkg.go.dev/github.com/aod/elver?tab=overview)
 
-Run your Go Advent of Code solutions with a single command. 
+Run your Go Advent of Code solutions with a single command.
 Write your solution and Elver will take care of the rest.
 
 # Features
@@ -29,9 +29,23 @@ Write your solution and Elver will take care of the rest.
 
 # How does it work?
 
+## Brief description
+
 Elver uses plugin build mode to generate a `.so` file to dynamically look up the solutions.
-Solutions must be in an _advent folder_ in a **main** package which is required by the plugin build mode.
-A solution represents a day and a part and is defined as `func Day[1..25][A|B]...` e.g.:
+These must reside in an Advent of Code folder under the main package.
+
+---
+
+A solution for a day in an Advent of Code year is represented by 2 solvers for part A and B.
+All solvers are functions which satisfy the same signature where `interface{}` is the output:
+
+`func (input string) (interface{}, error)`
+
+A solver must also be exported and its name should satisfy the following regex:
+
+[![](./solver.png)](https://www.debuggex.com/r/qLNz3M9BRYWaO6A3)
+
+## Code example:
 
 ```go
 // /2015/01.go
@@ -48,7 +62,7 @@ func Day1B(input string) (interface{}, error) {
 }
 ```
 
-Running Elver in the root folder will generate `/2015/2015.so` and output the following:
+Running Elver in the root directory will output something like the following:
 
 ```console
 $ elver
@@ -127,14 +141,16 @@ Benchmarking a **solver** by adding the `-b` flag
 
 ```console
 $ elver -b
+// Works with any combination of the previously mentioned flags e.g.:
+$ elver -y 2017 -d 21 -b
 ```
 
 # Similar
 
-These type of utility tools for Advent of Code als exist for other programming languages like
+These type of utility tools for Advent of Code also exist for other programming languages like
 [cargo-aoc](https://github.com/gobanos/cargo-aoc)
 (Rust)
 and
 [aocd](https://github.com/wimglenn/advent-of-code-data)
 (Python).
-Elver finds inspiration in these awesome projects so be sure to check them out as well.
+Elver finds inspiration in these awesome projects so be sure to check them out as well!

@@ -1,3 +1,39 @@
+// > Run your Go Advent of Code solutions with a single command.
+// > Write your solution and Elver will take care of the rest.
+//
+// Elver uses plugin build mode to generate a `.so` file to dynamically look up
+// the solutions.
+// Solutions must be in an advent folder in a main package which is
+// required by the plugin build mode.
+//
+// A solution represents a day and a part and its signature is defined as:
+// `func Day<1..25><A|B>(input string) (interface{}, error)`
+//
+// A more concrete example:
+// ```go
+// // /2015/01.go
+// package main
+//
+// import "errors"
+//
+// func Day1A(input string) (interface{}, error) {
+//     return 42, nil
+// }
+//
+// func Day1B(input string) (interface{}, error) {
+//     return nil, errors.New("Not implemented")
+// }
+// ```
+//
+// Running Elver in the root directory will produce something like the following:
+// ```console
+// $ elver
+// AOC 2015
+// Day 1 A (312ns):
+// 42
+// Day 1 B (956ns):
+// [ERROR] Not implemented
+// ```
 package main
 
 import (

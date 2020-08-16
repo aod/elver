@@ -6,9 +6,9 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
-	"strconv"
 
 	"github.com/aod/elver/aoc"
+	"github.com/aod/elver/config"
 )
 
 func getInput(year aoc.Year, day aoc.Day, sessionID string) ([]byte, error) {
@@ -16,7 +16,7 @@ func getInput(year aoc.Year, day aoc.Day, sessionID string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	inputFile := filepath.Join(inputCacheDir, strconv.Itoa(int(day))+".txt")
+	inputFile := filepath.Join(inputCacheDir, day.String()+".txt")
 
 	if _, err := os.Stat(inputFile); err != nil && os.IsNotExist(err) {
 		req, err := createInputRequest(year, day, sessionID)
@@ -40,14 +40,12 @@ func getInput(year aoc.Year, day aoc.Day, sessionID string) ([]byte, error) {
 }
 
 func createCacheDir(year aoc.Year) (string, error) {
-	cacheDir, err := os.UserCacheDir()
+	cacheDir, err := config.CacheDir()
 	if err != nil {
 		return "", err
 	}
 
-	cacheDir = filepath.Join(cacheDir, "elver", "aoc-inputs")
-	inputFileDir := filepath.Join(cacheDir, year.String())
-
+	inputFileDir := filepath.Join(cacheDir, "aoc-inputs", year.String())
 	if err := os.MkdirAll(inputFileDir, 0744); err != nil {
 		return "", err
 	}

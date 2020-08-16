@@ -9,27 +9,22 @@ import (
 	"bytes"
 	"io"
 	"io/ioutil"
-	"os"
 	"path/filepath"
 )
 
 // Contents returns an io.Reader with the given configuration file
 // contents.
 func Contents(file string) (io.Reader, error) {
-	baseConfigDir, err := configDir()
+	baseConfigDir, err := Dir()
 	if err != nil {
 		return nil, err
 	}
 
-	path := filepath.Join(baseConfigDir, appName, file)
+	path := filepath.Join(baseConfigDir, file)
 	b, err := ioutil.ReadFile(path)
 	if err != nil {
 		return nil, err
 	}
 
 	return bytes.NewReader(b), nil
-}
-
-func configDir() (string, error) {
-	return os.UserConfigDir()
 }

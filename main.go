@@ -56,12 +56,11 @@ func run(cwd, sessionID string, benchmark bool, dirFinder yearDirFinder, solvers
 		return err
 	}
 
-	cacheDir, err := os.UserCacheDir()
+	cacheDir, err := config.CacheDir()
 	if err != nil {
 		return err
 	}
-	buildFile := filepath.Join(cacheDir, "elver", "builds", year.String())
-
+	buildFile := filepath.Join(cacheDir, "builds", year.String())
 	err = command.New("go build -buildmode=plugin -o=" + buildFile).Dir(yPath).Exec()
 	if err != nil {
 		return err

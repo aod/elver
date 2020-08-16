@@ -4,8 +4,7 @@
 
 [Features](#features)
 | [How does it work?](#how-does-it-work)
-| [Quick start](#quick-start)
-| [Benchmarking](#benchmarking)
+| [Getting started](#getting-started)
 | [Examples](#examples)
 | [Similar](#similar)
 
@@ -29,23 +28,53 @@ Write your solution and Elver will take care of the rest.
 
 # How does it work?
 
-## Brief description
-
-Elver uses plugin build mode to generate a `.so` file to dynamically look up the solutions.
+Elver uses plugin build mode to dynamically look up the solutions.
 These must reside in an Advent of Code folder under the main package.
 
----
+# Getting started
+
+## 1. Install
+
+```console
+$ go get github.com/aod/elver
+```
+
+## 2. Session token
+
+Your https://adventofcode.com session token is required for downloading and caching the inputs.
+
+### 2.A Environment variable
+
+Set your Advent of Code session token in the environment variable `AOC_SESSION`.
+
+### 2.B Config file
+
+Alternatively you can store it in the `aoc_session` file in the
+following directory:
+
+- Linux: `$HOME/.config/elver/`
+- MacOS: `/Library/Application Support/elver/`
+- Windows: `%AppData%\elver\`
+
+## 3. Project structure
 
 A solution for a day in an Advent of Code year is represented by 2 solvers for part A and B.
 All solvers are functions which satisfy the same signature where `interface{}` is the output:
 
 `func (input string) (interface{}, error)`
 
-A solver must also be exported and its name should satisfy the following regex:
+For the plugin build mode to work correctly all solvers must be exported.
+The name of a solver is also very important for elver to work properly.
+It's name must satisfy the following set of rules:
 
-[![](./solver.png)](https://www.debuggex.com/r/qLNz3M9BRYWaO6A3)
+- Starts with `Day`
+- Followed by a valid Advent of Code day
+    - Within (inclusive) range of `1..25`
+- Ends with `A` for part 1 or `B` for part 2.
 
-## Code example:
+Solvers are workspaced by the Advent of Code year which is also used as the folder name.
+
+### Example
 
 ```go
 // /2015/01.go
@@ -73,32 +102,7 @@ Day 1 B (956ns):
 [ERROR] Not implemented
 ```
 
-# Quick start
-
-## 1. Install
-
-
-```console
-$ go get github.com/aod/elver
-```
-
-## 2. Cookie
-
-### 2.a Environment variable
-
-Set your Advent of Code session token in the environment variable `AOC_SESSION`.
-This variable is used to automatically download your inputs and cache them.
-
-### 2.b Config file
-
-Alternatively you can store your session ID in the `aoc_session` file in the
-following directory:
-
-- Windows: `%AppData%\elver\`
-- MacOS: `/Library/Application Support/elver/`
-- Linux: `$HOME/.config/elver/`
-
-# Benchmarking
+### Benchmarking
 
 Run Elver with the `-b` flag to benchmark your latest solution:
 

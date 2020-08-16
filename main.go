@@ -1,39 +1,47 @@
-// > Run your Go Advent of Code solutions with a single command.
-// > Write your solution and Elver will take care of the rest.
-//
-// Elver uses plugin build mode to generate a `.so` file to dynamically look up
-// the solutions.
-// Solutions must be in an advent folder in a main package which is
-// required by the plugin build mode.
-//
-// A solution represents a day and a part and its signature is defined as:
-// `func Day<1..25><A|B>(input string) (interface{}, error)`
-//
-// A more concrete example:
-// ```go
-// // /2015/01.go
-// package main
-//
-// import "errors"
-//
-// func Day1A(input string) (interface{}, error) {
-//     return 42, nil
-// }
-//
-// func Day1B(input string) (interface{}, error) {
-//     return nil, errors.New("Not implemented")
-// }
-// ```
-//
-// Running Elver in the root directory will produce something like the following:
-// ```console
-// $ elver
-// AOC 2015
-// Day 1 A (312ns):
-// 42
-// Day 1 B (956ns):
-// [ERROR] Not implemented
-// ```
+/*
+Run your Go Advent of Code solutions with a single command.
+Write your solution and Elver will take care of the rest.
+
+How it works
+
+Elver uses plugin build mode to generate a `.so` file to dynamically look up
+the solutions.
+These must reside in an Advent of Code folder under the main package.
+
+A solution for a day in an Advent of Code year is represented by 2 solvers
+for part A and B.
+All solvers are functions which satisfy the same signature where interface{}
+is the output:
+
+	func (input string) (interface{}, error)
+
+A solver must be exported and it's name satisfy the following regex:
+
+	(Day)([1-9]|1[0-9]|2[0-5])(A|B)
+
+Code example
+
+	package main
+
+	import "errors"
+
+	func Day1A(input string) (interface{}, error) {
+	    return 42, nil
+	}
+
+	func Day1B(input string) (interface{}, error) {
+	    return nil, errors.New("Not implemented")
+	}
+
+Running Elver in the root directory will output something like the following:
+
+	$ elver
+	AOC 2015
+	Day 1 A (312ns):
+	42
+	Day 1 B (956ns):
+	[ERROR] Not implemented
+*/
 package main
 
 import (

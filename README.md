@@ -1,4 +1,4 @@
-![](./elver.png)
+![](./_assets/elver.png)
 
 ---
 

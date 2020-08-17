@@ -13,6 +13,7 @@ import (
 	"github.com/aod/elver/command"
 	"github.com/aod/elver/config"
 	"github.com/aod/elver/flags"
+	"github.com/aod/elver/internal/cmd/util"
 )
 
 // Execute is the entrypoint to elver.
@@ -29,14 +30,14 @@ func Execute(args []string) {
 	flag.Parse()
 
 	cwd, err := os.Getwd()
-	handleError(err)
+	util.HandleError(err)
 
 	config.SetAppName("elver")
 	sessReader, err := config.EnvOrContents("AOC_SESSION", "aoc_session")
-	handleError(err)
+	util.HandleError(err)
 	buf := new(strings.Builder)
 	_, err = io.Copy(buf, sessReader)
-	handleError(err)
+	util.HandleError(err)
 	sessionID := strings.TrimSpace(buf.String())
 
 	var dirFinder yearDirFinder = latestYearDirFinder{}
@@ -50,7 +51,7 @@ func Execute(args []string) {
 	}
 
 	opts := options{cwd, sessionID, *benchmarkFlag, *testFlag}
-	handleError(run(opts, dirFinder, solversFinder))
+	util.HandleError(run(opts, dirFinder, solversFinder))
 }
 
 type options struct {

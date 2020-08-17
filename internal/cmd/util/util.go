@@ -1,4 +1,5 @@
-package cmd
+// Package util provides small utility functions.
+package util
 
 import (
 	"errors"
@@ -8,7 +9,10 @@ import (
 	"os"
 )
 
-func fetch(req *http.Request) ([]byte, error) {
+// Fetch executes req and returns the body and error if any.
+// An error is returned when resp.StatusCode >= 400 or ioutil.Readall(resp.body)
+// fails.
+func Fetch(req *http.Request) ([]byte, error) {
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
@@ -28,7 +32,8 @@ func fetch(req *http.Request) ([]byte, error) {
 	return body, nil
 }
 
-func handleError(err error) {
+// HandleError exits the program if err is not nil and prints it.
+func HandleError(err error) {
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)

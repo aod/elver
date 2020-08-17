@@ -9,6 +9,7 @@ import (
 
 	"github.com/aod/elver/aoc"
 	"github.com/aod/elver/config"
+	"github.com/aod/elver/internal/cmd/util"
 )
 
 func getInput(year aoc.Year, day aoc.Day, sessionID string) ([]byte, error) {
@@ -24,7 +25,7 @@ func getInput(year aoc.Year, day aoc.Day, sessionID string) ([]byte, error) {
 			return nil, err
 		}
 
-		body, err := fetch(req)
+		body, err := util.Fetch(req)
 		if err != nil {
 			return nil, err
 		}

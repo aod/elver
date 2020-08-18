@@ -13,7 +13,7 @@ import (
 	"github.com/aod/elver/command"
 	"github.com/aod/elver/config"
 	"github.com/aod/elver/flags"
-	"github.com/aod/elver/internal/cmd/util"
+	"github.com/aod/elver/internal/util"
 )
 
 // Execute is the entrypoint to elver.

@@ -9,7 +9,7 @@ import (
 
 	"github.com/aod/elver/aoc"
 	"github.com/aod/elver/config"
-	"github.com/aod/elver/internal/cmd/util"
+	"github.com/aod/elver/internal/util"
 )
 
 func getInput(year aoc.Year, day aoc.Day, sessionID string) ([]byte, error) {
@@ -20,7 +20,7 @@ func getInput(year aoc.Year, day aoc.Day, sessionID string) ([]byte, error) {
 	inputFile := filepath.Join(inputCacheDir, day.String()+".txt")
 
 	if _, err := os.Stat(inputFile); err != nil && os.IsNotExist(err) {
-		req, err := createInputRequest(year, day, sessionID)
+		req, err := aoc.CreateInputReq(aoc.Date{Year: year, Day: day}, sessionID)
 		if err != nil {
 			return nil, err
 		}

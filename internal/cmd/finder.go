@@ -7,6 +7,7 @@ import (
 	"sort"
 
 	"github.com/aod/elver/aoc"
+	"github.com/aod/elver/internal/solver"
 )
 
 type yearDirFinder interface {
@@ -25,9 +26,7 @@ func (latestYearDirFinder) findYearDir(cwd string) (aoc.Year, string, error) {
 	return year, path, nil
 }
 
-type specificYearDirFinder struct {
-	year aoc.Year
-}
+type specificYearDirFinder struct{ year aoc.Year }
 
 func (f specificYearDirFinder) findYearDir(cwd string) (aoc.Year, string, error) {
 	p, err := f.year.FindDir(cwd)
@@ -38,35 +37,43 @@ func (f specificYearDirFinder) findYearDir(cwd string) (aoc.Year, string, error)
 }
 
 type solversFinder interface {
-	findSolvers(p *plugin.Plugin) (aoc.Day, *solver, *solver, error)
+	findSolvers(p *plugin.Plugin) (aoc.Day, solver.Func, solver.Func, error)
 }
 
 type latestSolversFinder struct{}
 
-func (latestSolversFinder) findSolvers(p *plugin.Plugin) (aoc.Day, *solver, *solver, error) {
+func (latestSolversFinder) findSolvers(p *plugin.Plugin) (aoc.Day, solver.Func, solver.Func, error) {
 	for day := aoc.LastDay; day >= aoc.FirstDay; day-- {
-		sA, sB, err := pluginSolversAB(p, day)
+		a, err := solver.FromPlugin(p, day, aoc.Part1)
+		if errors.Is(err, solver.ErrSolverInvalidSignature) {
+			return day, nil, nil, err
+		} else if err != nil {
+			continue
+		}
 
-		if errors.Is(err, errInvalidSolverSignature) {
+		b, err := solver.FromPlugin(p, day, aoc.Part2)
+		if errors.Is(err, solver.ErrSolverInvalidSignature) {
 			return day, nil, nil, err
 		}
-		if err == nil {
-			return day, sA, sB, err
-		}
+
+		return day, a, b, nil
 	}
 
 	return 0, nil, nil, fmt.Errorf("no solvers found")
 }
 
-type specificDaySolversFinder struct {
-	day aoc.Day
-}
+type specificDaySolversFinder struct{ day aoc.Day }
 
-func (f specificDaySolversFinder) findSolvers(p *plugin.Plugin) (aoc.Day, *solver, *solver, error) {
-	sA, sB, err := pluginSolversAB(p, f.day)
+func (f specificDaySolversFinder) findSolvers(p *plugin.Plugin) (aoc.Day, solver.Func, solver.Func, error) {
+	a, err := solver.FromPlugin(p, f.day, aoc.Part1)
 	if err != nil {
-		return 0, nil, nil, err
+		return f.day, nil, nil, err
 	}
 
-	return f.day, sA, sB, err
+	b, err := solver.FromPlugin(p, f.day, aoc.Part2)
+	if errors.Is(err, solver.ErrSolverInvalidSignature) {
+		return f.day, nil, nil, err
+	}
+
+	return f.day, a, b, nil
 }

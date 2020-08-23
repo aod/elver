@@ -9,6 +9,8 @@ import (
 	"plugin"
 	"strings"
 
+	"github.com/aod/elver/internal/solver"
+
 	"github.com/aod/elver/aoc"
 	"github.com/aod/elver/command"
 	"github.com/aod/elver/config"
@@ -82,9 +84,9 @@ func run(opts options, dirFinder yearDirFinder, solversFinder solversFinder) err
 		return err
 	}
 
-	day, solverA, solverB, err := solversFinder.findSolvers(p)
+	day, funcA, funcB, err := solversFinder.findSolvers(p)
 	if err != nil {
-		return err
+		return fmt.Errorf("%s: %w", year, err)
 	}
 
 	input, err := getInput(year, day, opts.sessionID)
@@ -92,14 +94,35 @@ func run(opts options, dirFinder yearDirFinder, solversFinder solversFinder) err
 		return err
 	}
 
-	fmt.Println("AOC", year)
-
-	stringInput := string(input)
-	fmt.Fprintln(os.Stdout, solverA.solveResult(stringInput, opts.benchmark))
-
-	if solverB != nil {
-		fmt.Fprintln(os.Stdout, solverB.solveResult(stringInput, opts.benchmark))
+	k := solver.TimeResult
+	if opts.benchmark {
+		k = solver.BenchmarkResult
 	}
+
+	fmt.Println("AOC", year)
+	stringInput := string(input)
+
+	solverA := solver.Solver{
+		DatePart: aoc.DatePart{
+			Date: aoc.Date{Year: year, Day: day},
+			Part: aoc.Part1,
+		},
+		Solver: funcA,
+	}
+	fmt.Fprintln(os.Stdout, solverA.Result(stringInput, k))
+
+	if funcB == nil {
+		return nil
+	}
+
+	solverB := solver.Solver{
+		DatePart: aoc.DatePart{
+			Date: aoc.Date{Year: year, Day: day},
+			Part: aoc.Part2,
+		},
+		Solver: funcB,
+	}
+	fmt.Fprintln(os.Stdout, solverB.Result(stringInput, k))
 
 	return nil
 }

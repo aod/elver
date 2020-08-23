@@ -1,9 +1,7 @@
 package cmd
 
 import (
-	"fmt"
 	"io/ioutil"
-	"net/http"
 	"os"
 	"path/filepath"
 
@@ -51,22 +49,4 @@ func createCacheDir(year aoc.Year) (string, error) {
 		return "", err
 	}
 	return inputFileDir, nil
-}
-
-func createInputRequest(year aoc.Year, day aoc.Day, sessionID string) (*http.Request, error) {
-	url := fmt.Sprintf("https://adventofcode.com/%d/day/%d/input", year, day)
-
-	req, err := http.NewRequest("GET", url, nil)
-	if err != nil {
-		return nil, err
-	}
-
-	req.AddCookie(&http.Cookie{
-		Name:   "session",
-		Value:  sessionID,
-		Domain: ".adventofcode.com",
-		Path:   "/",
-	})
-
-	return req, nil
 }

@@ -44,36 +44,23 @@ type latestSolversFinder struct{}
 
 func (latestSolversFinder) findSolvers(p *plugin.Plugin) (aoc.Day, solver.Func, solver.Func, error) {
 	for day := aoc.LastDay; day >= aoc.FirstDay; day-- {
-		a, err := solver.FromPlugin(p, day, aoc.Part1)
+		a, b, err := solver.FromPluginBoth(p, day)
 		if errors.Is(err, solver.ErrSolverInvalidSignature) {
 			return day, nil, nil, err
-		} else if err != nil {
+		} else if a == nil && b == nil && err != nil { // no solvers found for day, keep looping
 			continue
 		}
-
-		b, err := solver.FromPlugin(p, day, aoc.Part2)
-		if errors.Is(err, solver.ErrSolverInvalidSignature) {
-			return day, nil, nil, err
-		}
-
 		return day, a, b, nil
 	}
-
 	return 0, nil, nil, fmt.Errorf("no solvers found")
 }
 
 type specificDaySolversFinder struct{ day aoc.Day }
 
 func (f specificDaySolversFinder) findSolvers(p *plugin.Plugin) (aoc.Day, solver.Func, solver.Func, error) {
-	a, err := solver.FromPlugin(p, f.day, aoc.Part1)
+	a, b, err := solver.FromPluginBoth(p, f.day)
 	if err != nil {
 		return f.day, nil, nil, err
 	}
-
-	b, err := solver.FromPlugin(p, f.day, aoc.Part2)
-	if errors.Is(err, solver.ErrSolverInvalidSignature) {
-		return f.day, nil, nil, err
-	}
-
 	return f.day, a, b, nil
 }

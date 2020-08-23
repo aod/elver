@@ -40,7 +40,7 @@ type Result struct {
 }
 
 func (s Result) String() string {
-	res := fmt.Sprintf("Day %s%s ", s.Day, s.Part)
+	res := fmt.Sprintf("Day %s %s ", s.Day, s.Part)
 	res += s.Attr.String()
 	res += s.answer()
 	return res

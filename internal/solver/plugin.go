@@ -12,7 +12,9 @@ var (
 	ErrSolverInvalidSignature = errors.New("invalid signature in plugin")
 )
 
-func FromPlugin(p *plugin.Plugin, d aoc.Day, pt aoc.Part) (Func, error) {
+type Plugin = plugin.Plugin
+
+func FromPlugin(p *Plugin, d aoc.Day, pt aoc.Part) (Func, error) {
 	v, err := p.Lookup("Day" + d.String() + pt.String())
 	if err != nil {
 		return nil, fmt.Errorf("no solver found: %w", err)
@@ -23,4 +25,18 @@ func FromPlugin(p *plugin.Plugin, d aoc.Day, pt aoc.Part) (Func, error) {
 			d, pt, v, solver, ErrSolverInvalidSignature)
 	}
 	return solver, nil
+}
+
+func FromPluginBoth(p *Plugin, d aoc.Day) (Func, Func, error) {
+	a, err := FromPlugin(p, d, aoc.Part1)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	b, err := FromPlugin(p, d, aoc.Part2)
+	if errors.Is(err, ErrSolverInvalidSignature) {
+		return a, nil, err
+	}
+
+	return a, b, nil
 }

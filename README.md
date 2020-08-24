@@ -117,31 +117,31 @@ Day 1 B (N=0, 0 ns/op, 0 bytes/op, 0 allocs/op):
 
 # Examples
 
-Running the latest **solver**:
+Running the latest **solvers**:
 
 ```console
 $ elver
 ```
 
-Running the latest **solver** of a specific year:
+Running the latest **solvers** of a specific year:
 
 ```console
 $ elver -y 2017
 ```
 
-Running the latest **solver** of a specific day:
+Running the latest **solvers** of a specific day:
 
 ```console
 $ elver -d 21
 ```
 
-Running the specific **solver** of a year and day:
+Running the specific **solvers** of a year and day:
 
 ```console
 $ elver -y 2017 -d 21
 ```
 
-Benchmarking a **solver** by adding the `-b` flag
+Benchmarking the **solvers** by adding the `-b` flag
 
 ```console
 $ elver -b

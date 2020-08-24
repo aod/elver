@@ -10,15 +10,15 @@ import (
 	"github.com/aod/elver/internal/util"
 )
 
-func getInput(year aoc.Year, day aoc.Day, sessionID string) ([]byte, error) {
-	inputCacheDir, err := createCacheDir(year)
+func getInput(d aoc.Date, sessionID string) ([]byte, error) {
+	inputCacheDir, err := createCacheDir(d.Year)
 	if err != nil {
 		return nil, err
 	}
-	inputFile := filepath.Join(inputCacheDir, day.String()+".txt")
+	inputFile := filepath.Join(inputCacheDir, d.Day.String()+".txt")
 
 	if _, err := os.Stat(inputFile); err != nil && os.IsNotExist(err) {
-		req, err := aoc.CreateInputReq(aoc.Date{Year: year, Day: day}, sessionID)
+		req, err := aoc.CreateInputReq(d, sessionID)
 		if err != nil {
 			return nil, err
 		}

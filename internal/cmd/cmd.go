@@ -3,19 +3,20 @@ package cmd
 import (
 	"flag"
 	"fmt"
-	"io"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"plugin"
 	"strings"
+	"unsafe"
 
 	"github.com/aod/elver/internal/solver"
+	"github.com/aod/elver/internal/util"
 
 	"github.com/aod/elver/aoc"
 	"github.com/aod/elver/command"
 	"github.com/aod/elver/config"
 	"github.com/aod/elver/flags"
-	"github.com/aod/elver/internal/util"
 )
 
 // Execute is the entrypoint to elver.
@@ -37,10 +38,9 @@ func Execute(args []string) {
 	config.SetAppName("elver")
 	sessReader, err := config.EnvOrContents("AOC_SESSION", "aoc_session")
 	util.HandleError(err)
-	buf := new(strings.Builder)
-	_, err = io.Copy(buf, sessReader)
+	b, err := ioutil.ReadAll(sessReader)
 	util.HandleError(err)
-	sessionID := strings.TrimSpace(buf.String())
+	sessionID := strings.TrimSpace(*(*string)(unsafe.Pointer(&b)))
 
 	var dirFinder yearDirFinder = latestYearDirFinder{}
 	if year.Value != 0 {
@@ -89,10 +89,12 @@ func run(opts options, dirFinder yearDirFinder, solversFinder solversFinder) err
 		return fmt.Errorf("%s: %w", year, err)
 	}
 
-	input, err := getInput(year, day, opts.sessionID)
+	date := aoc.Date{Year: year, Day: day}
+	b, err := getInput(date, opts.sessionID)
 	if err != nil {
 		return err
 	}
+	input := *(*string)(unsafe.Pointer(&b))
 
 	k := solver.TimeResult
 	if opts.benchmark {
@@ -100,16 +102,15 @@ func run(opts options, dirFinder yearDirFinder, solversFinder solversFinder) err
 	}
 
 	fmt.Println("AOC", year)
-	stringInput := string(input)
 
 	solverA := solver.Solver{
 		DatePart: aoc.DatePart{
-			Date: aoc.Date{Year: year, Day: day},
+			Date: date,
 			Part: aoc.Part1,
 		},
 		Solver: funcA,
 	}
-	fmt.Fprintln(os.Stdout, solverA.Result(stringInput, k))
+	fmt.Fprintln(os.Stdout, solverA.Result(input, k))
 
 	if funcB == nil {
 		return nil
@@ -117,12 +118,12 @@ func run(opts options, dirFinder yearDirFinder, solversFinder solversFinder) err
 
 	solverB := solver.Solver{
 		DatePart: aoc.DatePart{
-			Date: aoc.Date{Year: year, Day: day},
+			Date: date,
 			Part: aoc.Part2,
 		},
 		Solver: funcB,
 	}
-	fmt.Fprintln(os.Stdout, solverB.Result(stringInput, k))
+	fmt.Fprintln(os.Stdout, solverB.Result(input, k))
 
 	return nil
 }

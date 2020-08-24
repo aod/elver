@@ -39,3 +39,21 @@ func HandleError(err error) {
 		os.Exit(1)
 	}
 }
+
+// RedirectNull redirect files to the operating system's “null device”.
+// The returned function restores this redirection.
+func RedirectNull(files ...**os.File) func() {
+	tmp := make([]*os.File, 0, cap(files))
+	for _, v := range files {
+		tmp = append(tmp, *v)
+	}
+	null, _ := os.Open(os.DevNull)
+	for i := range files {
+		*files[i] = null
+	}
+	return func() {
+		for i := range files {
+			*files[i] = tmp[i]
+		}
+	}
+}

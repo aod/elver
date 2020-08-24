@@ -5,6 +5,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/aod/elver/internal/util"
+
 	"github.com/aod/elver/aoc"
 )
 
@@ -23,11 +25,7 @@ func (s Solver) Result(input string, rk ResultKind) Result {
 	r := Result{DatePart: s.DatePart, Attr: ResultAttribute{ResultKind: rk}}
 	switch rk {
 	case BenchmarkResult:
-		stdout, stderr := os.Stdout, os.Stderr
-		defer func() { os.Stdout, os.Stderr = stdout, stderr }()
-		null, _ := os.Open(os.DevNull)
-		os.Stdout, os.Stderr = null, null
-
+		defer util.RedirectNull(&os.Stdout, &os.Stderr)()
 		b := testing.Benchmark(func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
 				if r.Answer, r.Err = s.Solve(input); r.Err != nil {

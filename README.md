@@ -16,7 +16,7 @@
 [![Go](https://github.com/aod/elver/workflows/Go/badge.svg)](https://github.com/aod/elver/actions?query=workflow%3AGo)
 [![PkgGoDev](https://pkg.go.dev/badge/github.com/aod/elver)](https://pkg.go.dev/github.com/aod/elver?tab=overview)
 
-**NOTE: only supported on Linux, FreeBSD, and macOS due to the use of built-in `plugin` package**.
+**NOTE: only supported on Linux, FreeBSD, and macOS due to the use of built-in `plugin` package.**
 
 Run your Go Advent of Code solutions with a single command.
 Write your solution and Elver will take care of the rest.
